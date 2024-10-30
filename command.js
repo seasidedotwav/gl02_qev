@@ -1,5 +1,5 @@
 var Command = {
-    TurnLeft: function () {
+    check: function () {
         console.log("Ship turns left !");
         return true;
     },

@@ -1,9 +1,8 @@
 var Question = require('./Question');
 
+// Gift parser
 
-// VpfParser
-
-var VpfParser = function(sTokenize, sParsedSymb){
+var GiftParser = function(sTokenize, sParsedSymb){
     // The list of POI parsed from the input file.
     this.parsedPOI = [];
     this.symb = ["START_POI","name","latlng","note","END_POI","$$"];
@@ -16,7 +15,7 @@ var VpfParser = function(sTokenize, sParsedSymb){
 
 // tokenize : tranform the data input into a list
 // <eol> = CRLF
-VpfParser.prototype.tokenize = function(data){
+GiftParser.prototype.tokenize = function(data){
     var separator = /(\r\n|: )/;
     data = data.split(separator);
     data = data.filter((val, idx) => !val.match(separator));
@@ -24,7 +23,7 @@ VpfParser.prototype.tokenize = function(data){
 }
 
 // parse : analyze data by calling the first non terminal rule of the grammar
-VpfParser.prototype.parse = function(data){
+GiftParser.prototype.parse = function(data){
     var tData = this.tokenize(data);
     if(this.showTokenize){
         console.log(tData);
@@ -34,13 +33,13 @@ VpfParser.prototype.parse = function(data){
 
 // Parser operand
 
-VpfParser.prototype.errMsg = function(msg, input){
+GiftParser.prototype.errMsg = function(msg, input){
     this.errorCount++;
     console.log("Parsing Error ! on "+input+" -- msg : "+msg);
 }
 
 // Read and return a symbol from input
-VpfParser.prototype.next = function(input){
+GiftParser.prototype.next = function(input){
     var curS = input.shift();
     if(this.showParsedSymbols){
         console.log(curS);
@@ -49,7 +48,7 @@ VpfParser.prototype.next = function(input){
 }
 
 // accept : verify if the arg s is part of the language symbols.
-VpfParser.prototype.accept = function(s){
+GiftParser.prototype.accept = function(s){
     var idx = this.symb.indexOf(s);
     // index 0 exists
     if(idx === -1){
@@ -63,7 +62,7 @@ VpfParser.prototype.accept = function(s){
 
 
 // check : check whether the arg elt is on the head of the list
-VpfParser.prototype.check = function(s, input){
+GiftParser.prototype.check = function(s, input){
     if(this.accept(input[0]) === this.accept(s)){
         return true;
     }
@@ -71,7 +70,7 @@ VpfParser.prototype.check = function(s, input){
 }
 
 // expect : expect the next symbol to be s.
-VpfParser.prototype.expect = function(s, input){
+GiftParser.prototype.expect = function(s, input){
     if(s === this.next(input)){
         //console.log("Reckognized! "+s)
         return true;

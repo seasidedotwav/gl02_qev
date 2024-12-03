@@ -10,13 +10,15 @@ What do you sometimes feel embarrassed {1:MC:~in~=by}? Who do you find embarrass
 */
 
 
-var Question = function(id, questions, answer, text){
+var Element = function(id, questions, answer, text, comments){
     this.id = id
-	this.questions = questions;
+	this.questions = [].concat(questions);
     this.text = text
 	this.answer = answer;
+    this.comments = [].concat(comments);
 }
 
 
 
-module.exports = Question;
+
+module.exports = Element;

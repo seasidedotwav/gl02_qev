@@ -12,7 +12,7 @@ const GiftParser = function (sTokenize, sParsedSymb) {
 // tokenize : transformer les données en une liste
 GiftParser.prototype.tokenize = function(data) {
     // Expression régulière pour capturer chaque séparateur individuellement, y compris '{~' et '~='
-    const separator = /(::|{~|~=|~|{|}|\[html\]|:|\/\/|=|\r\n)/g;
+    const separator = /(::|{~|~=|~|{|}|\[html\]|\/\/|=|\r\n)/g;
 
     // Remplacer les combinaisons comme '{~' et '~=' par des tokens distincts
     let result = data.split(separator);
@@ -57,7 +57,7 @@ GiftParser.prototype.next = function(input) {
 
 // accept : vérifier si le symbole passé en argument est dans la liste des symboles
 GiftParser.prototype.accept = function(s) {
-    const idx = this.symb.indexOf(s);
+    var idx = this.symb.indexOf(s);
     if (idx === -1) {
         this.errMsg("symbol " + s + " unknown", [" "]);
         return false;

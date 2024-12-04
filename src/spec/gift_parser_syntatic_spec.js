@@ -33,6 +33,15 @@ describe("Program Syntactic testing of GiftParser", function(){
 
     xit("test with all files", function () {
 
+
     });
+    // TODO U3-p31-Gra-ed_adjectives_prepositions.gift
+
+    // TODO EM-U5-p38-Passive.gift
+
+    // TODO U4-p42_43-Listening.gift
+
+    // TODO U6-p59-Vocabulary.gift
+
 
 });

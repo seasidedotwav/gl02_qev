@@ -111,10 +111,8 @@ GiftParser.prototype.comment = function (input) {
 // question = en-tête + corps + réponses + texte additionnel
 GiftParser.prototype.question = function (input) {
     const question = new Question();
-    question.header.push(this.questionHeader(input));  // En-tête de la question
-    question.body = this.questionBody(input);          // Corps de la question
-    // Réponses
-
+    question.header.push(this.questionHeader(input));
+    question.body = this.questionBody(input);
     return question;
 };
 
@@ -131,6 +129,7 @@ GiftParser.prototype.questionBody = function (input) {
     const body = [];
     while ("::" !== input[0] && input.length > 0) {
         if ("{" === input[0] ) {
+            // Check if its a question or a text
             body.push(this.answers(input));
         }else{
             body.push(this.next(input));
@@ -164,7 +163,7 @@ GiftParser.prototype.answer = function (input) {
     } else {
         answer.correct = false;
     }
-    answer.text = this.text(input);  // Grab the text after parsing correctness
+    answer.text = this.text(input);
     return answer;
 };
 

@@ -1,4 +1,4 @@
-const {Element, Question, Answer} = require('./Element');
+const {File, Question, Answer} = require('./File');
 
 const GiftParser = function (sTokenize, sParsedSymb) {
     this.parsedElement = [];
@@ -85,21 +85,21 @@ GiftParser.prototype.expect = function(s, input) {
 };
 // Liste des éléments
 GiftParser.prototype.listElement = function (input) {
+    const file = new File();
     while (input.length > 0) {
-        this.element(input);
+        this.element(input, file);
     }
+    this.parsedElement.push(file);
 };
 
 // élément = question / commentaire
-GiftParser.prototype.element = function (input) {
-    const elt = new Element();
+GiftParser.prototype.element = function (input, file) {
     if (this.check("//", input)) {
         const comment = this.comment(input);
-        elt.comments.push(comment);
+        file.comments.push(comment);
     } else if (this.check("::", input)) {
-        elt.questions.push(this.question(input));
+        file.questions.push(this.question(input));
     }
-    this.parsedElement.push(elt);
 };
 
 // commentaire
@@ -129,8 +129,8 @@ GiftParser.prototype.questionHeader = function (input) {
 // Corps de la question
 GiftParser.prototype.questionBody = function (input) {
     const body = [];
-    while ("::" !== input && input.length > 0) {
-        if ("{" === input) {
+    while ("::" !== input[0] && input.length > 0) {
+        if ("{" === input[0] ) {
             body.push(this.answers(input));
         }else{
             body.push(this.next(input));

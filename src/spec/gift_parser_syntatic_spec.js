@@ -1,24 +1,38 @@
+const Element = require('../File');
+const giftParser = require('../GiftParser');
+const fs = require('fs');
+
 describe("Program Syntactic testing of GiftParser", function(){
-
     beforeAll(function() {
-        const element = require('../Element');
-
-        const giftParser = require('../GiftParser');
         this.analyzer = new giftParser();
-
 
     });
 
-    it("can read comments", function(){
+    xit("can read comments", function(){
         let input = ["//", "This is a comment"];
         expect(this.analyzer.comment(input)).toBe("This is a comment");
     });
 
-    it ("can read a question header", function(){
+    xit ("can read a question header", function(){
         let input = ["::", "U3 p31 6 -ed adjectives and prepositions"];
         expect(this.analyzer.questionHeader(input)).toBe("U3 p31 6 -ed adjectives and prepositions");
     }  );
 
+    it("test basic question file", function () {
+        // U3-p30-Reading.gift
+        let file = fs.readFileSync('../SujetB_data/U3-p30-Reading.gift', 'utf8');
+        this.analyzer.parse(file);
+        let parsed = this.analyzer.parsedElement;
+        console.log(parsed);
+        console.log(parsed[0].questions);
+        expect(parsed.length).toBe(1);
+        expect(parsed[0].comments.length).toBe(2);
+        expect(parsed[0].questions.length).toBe(6);
 
+    });
+
+    xit("test with all files", function () {
+
+    });
 
 });

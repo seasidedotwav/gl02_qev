@@ -12,10 +12,10 @@ What do you sometimes feel embarrassed {1:MC:~in~=by}? Who do you find embarrass
 
 let Element = function (id, questions, text, comments) {
     this.id = id
-	this.questions = [].concat(questions);
+    this.questions = [].concat(questions);
     this.text = text
     this.comments = [].concat(comments);
-    this.questions = [];
+    this.questions = [];//null
 }
 
 let Question = function () {

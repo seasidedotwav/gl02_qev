@@ -39,11 +39,11 @@ Optional parameters have to be before the mandatory file parameter.
 
 # 0.05
 
-- Utilisation du framework Caporal.js pour gérer la cli
+- Utilisation du framework Caporal.js pour gï¿½rer la cli
 
 # 0.04
 
-- Découplage CLI dans module à part : cli.js
+- Dï¿½couplage CLI dans module ï¿½ part : cli.js
 - Refactoring POI et VpfParser
 
 # 0.03
@@ -54,17 +54,17 @@ Optional parameters have to be before the mandatory file parameter.
 # 0.02
 
 - Prise en charge des notes
-- Construction d'une liste d'objet POI afin de permettre des traitement ultérieur
+- Construction d'une liste d'objet POI afin de permettre des traitement ultï¿½rieur
 
 # 0.01
 
-- Parse entièrement les fichiers simples du jeu de test (mais termine avec une erreur)
+- Parse entiï¿½rement les fichiers simples du jeu de test (mais termine avec une erreur)
 - Prise en compte des noms de POI s'ils ne comportent pas d'espaces
 
-TODO :
+todo :
 
-- Modification de la grammaire (à vérifier)
-- Ajout de tests unitaires ./test/unit (qunit - lancer avec testRunner.js) - à compléter.
+- Modification de la grammaire (ï¿½ vï¿½rifier)
+- Ajout de tests unitaires ./test/unit (qunit - lancer avec testRunner.js) - ï¿½ complï¿½ter.
 
 - Ajout d'une option pour afficher chaque POI avec sa note moyenne
 

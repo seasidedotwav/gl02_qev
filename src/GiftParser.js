@@ -113,7 +113,7 @@ GiftParser.prototype.question = function (input) {
     const question = new Question();
     question.header = this.questionHeader(input);
     question.format = this.questionFormat(input);
-    question.body = this.questionBody(input);
+    question.body = this.questionBody(input,question);
     return question;
 };
 
@@ -137,12 +137,12 @@ GiftParser.prototype.questionFormat = function (input) {
 };
 
 // Corps de la question
-GiftParser.prototype.questionBody = function (input) {
+GiftParser.prototype.questionBody = function (input,question) {
     const body = [];
     while ("::" !== input[0] && input.length > 0) {
         if ("{" === input[0] ) {
             // Check if its a question or a text
-            body.push(this.answers(input));
+            body.push(this.answers(input,question));
         }else{
             body.push(this.next(input));
         }
@@ -153,19 +153,24 @@ GiftParser.prototype.questionBody = function (input) {
 };
 
 // Réponses
-GiftParser.prototype.answers = function (input) {
-    const answers = new Answers();
-    this.expect("{", input);
-    let type = "";
+GiftParser.prototype.typeQuestion = function (input) {
     // Texte optionnel avant les réponses (exemples : {1:MC:~with~=about})
     const optionalTextRegex = /^\d+:[A-Z]+:/; // Ex : 1:MC: ou 2:TF:, etc.
+    let type = "";
     if (optionalTextRegex.test(input[0])) {
         const match = input[0].match(optionalTextRegex);
         if (match) {
-            answers.type = match[0];
+            type = match[0];
             this.next(input);
         }
     }
+    return type;
+}
+
+GiftParser.prototype.answers = function (input,question) {
+    const answers = new Answers();
+    this.expect("{", input);
+    question.type = this.typeQuestion(input);
 
     while (!this.check("}", input) && input.length > 0) {
         let answer = this.answer(input);
@@ -190,6 +195,10 @@ GiftParser.prototype.answer = function (input) {
             answer.correct = false;
 
         }
+    } else if (nextSymbol === '=') {
+        answer.correct = true;
+        answer.text = this.next(input);
+        return answer
     }
     return answer;
 };

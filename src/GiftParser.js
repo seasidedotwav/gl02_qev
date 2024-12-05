@@ -144,6 +144,18 @@ GiftParser.prototype.questionBody = function (input) {
 GiftParser.prototype.answers = function (input) {
     const answers = [];
     this.expect("{", input);
+
+    // Texte optionnel avant les réponses (exemples : {1:MC:~with~=about})
+    const optionalTextRegex = /^\d+:[A-Z]+:/; // Ex : 1:MC: ou 2:TF:, etc.
+    if (optionalTextRegex.test(input[0])) {
+        const match = input[0].match(optionalTextRegex);
+        if (match) {
+            const optionalText = match[0];
+            answers.push(optionalText);
+            this.next(input);
+        }
+    }
+
     while (!this.check("}", input) && input.length > 0) {
         let answer = this.answer(input);
         answers.push(answer);

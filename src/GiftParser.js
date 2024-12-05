@@ -2,7 +2,7 @@ const {File, Question, Answer,Answers} = require('./File');
 
 const GiftParser = function (sTokenize, sParsedSymb) {
     this.parsedElement = [];
-    this.symb = ["::", "{~", "~=", "~", '{', '}', '[html]', ':', '//', "=", '[markdown]'];
+    this.symb = ["::", "{~", "~=", "~", '{', '}', '[html]', ':', '//', "=", '[markdown]',"$"];
     this.showTokenize = sTokenize;
     this.showParsedSymbols = sParsedSymb;
     this.errorCount = 0;
@@ -94,10 +94,15 @@ GiftParser.prototype.listElement = function (input) {
 
 // élément = question / commentaire
 GiftParser.prototype.element = function (input, file) {
+    if ("$" === input[0].charAt(0)) {
+        file.instructions.push(input[0]);
+        this.next(input);
+    }
     if (this.check("//", input)) {
         const comment = this.comment(input);
         file.comments.push(comment);
-    } else if (this.check("::", input)) {
+    }
+    if (this.check("::", input)) {
         file.questions.push(this.question(input));
     }
 };

@@ -1,5 +1,6 @@
 const giftParser = require('../GiftParser');
 const fs = require('fs');
+const {join} = require("node:path");
 
 describe("Program Syntactic testing of GiftParser", function(){
     beforeEach(function() {
@@ -37,9 +38,6 @@ describe("Program Syntactic testing of GiftParser", function(){
         let file = fs.readFileSync('../SujetB_data/U3-p31-Gra-ed_adjectives_prepositions.gift', 'utf8');
         this.analyzer.parse(file);
         let parsed = this.analyzer.parsedElement;
-        console.log(parsed);
-        console.log(parsed[0].questions);
-        console.log(parsed[0].questions[0].body[2]);
         expect(parsed.length).toBe(1);
         expect(parsed[0].comments.length).toBe(0);
         expect(parsed[0].questions.length).toBe(1);
@@ -57,8 +55,40 @@ describe("Program Syntactic testing of GiftParser", function(){
 
         expect(parsed.length).toBe(1);
         expect(parsed[0].comments.length).toBe(0);
-        expect(parsed[0].questions.length).toBe(1);
-        expect(parsed[0].questions[0].body.length).toBe(3);
+        expect(parsed[0].questions.length).toBe(6);
+        expect(parsed[0].questions[0].body.length).toBe(4);
     });
+
+    // TEST U1-p8_9-Reading-Coachella.gift
+    it('U1-p8_9-Reading-Coachella.gift', function () {
+        let file = fs.readFileSync('../SujetB_data/U1-p8_9-Reading-Coachella.gift', 'utf8');
+        this.analyzer.parse(file);
+        let parsed = this.analyzer.parsedElement;
+
+        expect(parsed.length).toBe(1);
+        expect(parsed[0].comments.length).toBe(3);
+        expect(parsed[0].questions.length).toBe(2);
+        expect(parsed[0].questions[0].body[1].list.length).toBe(7);
+        expect(parsed[0].instructions[0]).toBe("$CATEGORY: $course$/top/Gold B2, Unit 1");
+    });
+
+    // TEST ALL FILES
+// TEST ALL FILES
+    // TEST ALL FILES
+    it('test all files', function () {
+        let files = fs.readdirSync('../SujetB_data');
+        files.forEach(file => {
+            let fileContent = fs.readFileSync(join('../SujetB_data', file), 'utf8');
+            console.log('Processing file:', file);
+            this.analyzer.parse(fileContent);
+
+        });
+
+
+    });
+
+
+
+
 
 });

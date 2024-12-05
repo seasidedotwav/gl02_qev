@@ -96,18 +96,24 @@ GiftParser.prototype.listElement = function (input) {
 // élément = question / commentaire
 GiftParser.prototype.element = function (input, file) {
     if (this.check("$", input)) {
-        file.instructions.push(this.next(input));
-        this.next(input);
+        file.instructions.push(this.instruction(input));
+
     }
     if (this.check("//", input)) {
         const comment = this.comment(input);
         file.comments.push(comment);
+        return;
     }
     if (this.check("::", input)) {
         file.questions.push(this.question(input));
     }
 };
 
+// Instruction
+GiftParser.prototype.instruction = function (input) {
+    this.expect("$", input);
+    return this.next(input);
+};
 // commentaire
 GiftParser.prototype.comment = function (input) {
     this.expect("//", input);

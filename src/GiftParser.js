@@ -190,6 +190,10 @@ GiftParser.prototype.answer = function (input) {
             answer.correct = false;
 
         }
+    } else if (nextSymbol === '=') {
+        answer.correct = true;
+        answer.text = this.next(input);
+        return answer
     }
     return answer;
 };

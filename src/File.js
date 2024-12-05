@@ -14,15 +14,17 @@ let File = function () {
 	this.questions = [];
     this.comments = [];
     this.questions = [];
-    this.format = "";
 }
-
 let Question = function () {
     this.header = [];
     this.body = [];
-    this.type = "";
+    this.format = "";
 }
 
+let Answers = function () {
+    this.list = [];
+    this.type = "";
+}
 
 let Answer = function (correct, text, feedback) {
     this.correct = correct;
@@ -31,4 +33,4 @@ let Answer = function (correct, text, feedback) {
 }
 
 
-module.exports = {File, Question, Answer};
+module.exports = {File, Question, Answer, Answers};

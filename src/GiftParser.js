@@ -1,4 +1,4 @@
-const {File, Question, Answer} = require('./File');
+const {File, Question, Answer,Answers} = require('./File');
 
 const GiftParser = function (sTokenize, sParsedSymb) {
     this.parsedElement = [];
@@ -154,23 +154,22 @@ GiftParser.prototype.questionBody = function (input) {
 
 // Réponses
 GiftParser.prototype.answers = function (input) {
-    const answers = [];
+    const answers = new Answers();
     this.expect("{", input);
-
+    let type = "";
     // Texte optionnel avant les réponses (exemples : {1:MC:~with~=about})
     const optionalTextRegex = /^\d+:[A-Z]+:/; // Ex : 1:MC: ou 2:TF:, etc.
     if (optionalTextRegex.test(input[0])) {
         const match = input[0].match(optionalTextRegex);
         if (match) {
-            const optionalText = match[0];
-            answers.push(optionalText);
+            answers.type = match[0];
             this.next(input);
         }
     }
 
     while (!this.check("}", input) && input.length > 0) {
         let answer = this.answer(input);
-        answers.push(answer);
+        answers.list.push(answer);
     }
     this.expect("}", input);
     return answers;
@@ -181,14 +180,17 @@ GiftParser.prototype.answer = function (input) {
     let answer = new Answer();
     const nextSymbol = this.next(input);
     if (nextSymbol === '~') {
-        if (this.next(input) === '=') {
+        let nextSymbol = this.next(input);
+        if (nextSymbol === '=') {
             answer.correct = true;
-        }
-    } else {
-        answer.correct = false;
-    }
+            answer.text = this.next(input);
+            return answer
+        } else {
+            answer.text = nextSymbol;
+            answer.correct = false;
 
-    answer.text = this.text(input);
+        }
+    }
     return answer;
 };
 

@@ -1,8 +1,8 @@
-const {File, Question, Answer} = require('./File');
+const {File, Question, Answer,Answers} = require('./File');
 
 const GiftParser = function (sTokenize, sParsedSymb) {
     this.parsedElement = [];
-    this.symb = ["::", "{~", "~=", "~", '{', '}', '[html]', ':', '//'];
+    this.symb = ["::", "{~", "~=", "~", '{', '}', '[html]', ':', '//', "=", '[markdown]'];
     this.showTokenize = sTokenize;
     this.showParsedSymbols = sParsedSymb;
     this.errorCount = 0;
@@ -11,16 +11,16 @@ const GiftParser = function (sTokenize, sParsedSymb) {
 
 // tokenize : transformer les données en une liste
 GiftParser.prototype.tokenize = function(data) {
-    // Expression régulière pour capturer chaque séparateur individuellement, y compris '{~' et '~='
-    const separator = /(::|{~|~=|~|{|}|\[html\]|\/\/|=|\r\n)/g;
+    // Expression régulière mise à jour pour inclure les séparateurs comme '[markdown]', '[html]', etc.
+    const separator = /(::|{~|~=|~|{|}|\[markdown\]|\[html\]|\/\/|=|\r\n)/g;
 
-    // Remplacer les combinaisons comme '{~' et '~=' par des tokens distincts
+    // Découper la chaîne en utilisant les séparateurs définis
     let result = data.split(separator);
 
-    // Filtrage des éléments vides ou de retour à la ligne
+    // Filtrer les éléments vides, les espaces ou les retours à la ligne inutiles
     result = result.filter((val) => val !== "" && val !== "\r\n" && val.trim() !== "");
 
-    // Traiter les tokens '{~' et '~=' comme des tokens séparés
+    // Traiter les cas spécifiques comme '{~' et '~=' pour les convertir en tokens séparés
     result = result.flatMap(token => {
         if (token === "{~") return ["{", "~"];
         if (token === "~=") return ["~", "="];
@@ -110,10 +110,10 @@ GiftParser.prototype.comment = function (input) {
 
 // question = en-tête + corps + réponses + texte additionnel
 GiftParser.prototype.question = function (input) {
-    const question = new Question(this.questionHeader(input));
-    question.body = this.questionBody(input);          // Corps de la question
-    // Réponses
-
+    const question = new Question();
+    question.header = this.questionHeader(input);
+    question.format = this.questionFormat(input);
+    question.body = this.questionBody(input);
     return question;
 };
 
@@ -125,11 +125,23 @@ GiftParser.prototype.questionHeader = function (input) {
     return header;
 };
 
+// Format de la question HTML ou Markdown
+GiftParser.prototype.questionFormat = function (input) {
+    if ("[html]" === input[0]) {
+        return this.next(input);
+    } else if ("[markdown]" === input[0]) {
+        return this.next(input);
+    }else{
+        return "";
+    }
+};
+
 // Corps de la question
 GiftParser.prototype.questionBody = function (input) {
     const body = [];
     while ("::" !== input[0] && input.length > 0) {
         if ("{" === input[0] ) {
+            // Check if its a question or a text
             body.push(this.answers(input));
         }else{
             body.push(this.next(input));
@@ -142,11 +154,22 @@ GiftParser.prototype.questionBody = function (input) {
 
 // Réponses
 GiftParser.prototype.answers = function (input) {
-    const answers = [];
+    const answers = new Answers();
     this.expect("{", input);
+    let type = "";
+    // Texte optionnel avant les réponses (exemples : {1:MC:~with~=about})
+    const optionalTextRegex = /^\d+:[A-Z]+:/; // Ex : 1:MC: ou 2:TF:, etc.
+    if (optionalTextRegex.test(input[0])) {
+        const match = input[0].match(optionalTextRegex);
+        if (match) {
+            answers.type = match[0];
+            this.next(input);
+        }
+    }
+
     while (!this.check("}", input) && input.length > 0) {
         let answer = this.answer(input);
-        answers.push(answer);
+        answers.list.push(answer);
     }
     this.expect("}", input);
     return answers;
@@ -157,13 +180,17 @@ GiftParser.prototype.answer = function (input) {
     let answer = new Answer();
     const nextSymbol = this.next(input);
     if (nextSymbol === '~') {
-        if (this.next(input) === '=') {
+        let nextSymbol = this.next(input);
+        if (nextSymbol === '=') {
             answer.correct = true;
+            answer.text = this.next(input);
+            return answer
+        } else {
+            answer.text = nextSymbol;
+            answer.correct = false;
+
         }
-    } else {
-        answer.correct = false;
     }
-    answer.text = this.text(input);  // Grab the text after parsing correctness
     return answer;
 };
 

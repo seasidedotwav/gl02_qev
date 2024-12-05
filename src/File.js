@@ -10,19 +10,21 @@ What do you sometimes feel embarrassed {1:MC:~in~=by}? Who do you find embarrass
 */
 
 
-let File = function (id, questions, text) {
-    this.id = id
+let File = function () {
 	this.questions = [];
-    this.text = text
     this.comments = [];
     this.questions = [];
 }
-
-let Question = function (header) {
-    this.header = header;
+let Question = function () {
+    this.header = [];
     this.body = [];
+    this.format = "";
 }
 
+let Answers = function () {
+    this.list = [];
+    this.type = "";
+}
 
 let Answer = function (correct, text, feedback) {
     this.correct = correct;
@@ -31,4 +33,4 @@ let Answer = function (correct, text, feedback) {
 }
 
 
-module.exports = {File, Question, Answer};
+module.exports = {File, Question, Answer, Answers};

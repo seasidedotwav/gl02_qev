@@ -1,10 +1,14 @@
 const fs = require('fs');
 const colors = require('colors');
 const GiftParser = require('./GiftParser.js');
+const Exam = require('./Exam.js');
 const vg = require('vega');
 const vegalite = require('vega-lite');
 
 const cli = require("@caporal/core").default;
+
+const exam = new Exam();
+
 
 cli
     .version('0.1')
@@ -88,6 +92,7 @@ cli
 		if(parser.errorCount === 0){
 			var textToSearch = new RegExp(args.headerText);
 
+
 			var filteredElements = []
 
 			for (let i = 0; i < parser.parsedElement.length; i++) {		//iterate over parsedElement , on file
@@ -108,39 +113,30 @@ cli
 					break;
 				case 1:
 					logger.info("%s", JSON.stringify(filteredElements, null, 2));
-					logger.info("Ellement added to exam !".green);
-					//TODO  add the question to the exam 	create a new file with list of exam ?, an exam object ??
+					exam.addQuestion(question)
+					exam.show()
 					break;
-			
 				default:
 					logger.info("%s", JSON.stringify(filteredElements, null, 2));
 					logger.info("Too many question selected, Please enter a more accurate Question header identifier !".red);
 					break;
 			}
-				
-			
 		}else{
 			logger.info("The .gift file contains error".red);
 		}
-		
 		});
+	})
+
+	// verify exam integrity  EF03 
+	.command('clearExam', 'Clear all question in the exam')
+	.action(({args, options, logger}) => {
+		exam.clear()
 	})
 
     // verify exam integrity  EF03 
 	.command('verifyExam', 'Verify exam integrity')
 	.action(({args, options, logger}) => {
-
-
-
-
-            //TODO verify command
-            //verify if betwin 15 and 20 question in exam 
-            //verify no multiple same question 
-			
-
-
-		
-
+		exam.isValid()
 	})
 
     // export exam in GIFT format   EF02

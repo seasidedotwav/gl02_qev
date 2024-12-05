@@ -2,7 +2,7 @@ const {File, Question, Answer} = require('./File');
 
 const GiftParser = function (sTokenize, sParsedSymb) {
     this.parsedElement = [];
-    this.symb = ["::", "{~", "~=", "~", '{', '}', '[html]', ':', '//'];
+    this.symb = ["::", "{~", "~=", "~", '{', '}', '[html]', ':', '//', "=", '[markdown]'];
     this.showTokenize = sTokenize;
     this.showParsedSymbols = sParsedSymb;
     this.errorCount = 0;
@@ -11,16 +11,16 @@ const GiftParser = function (sTokenize, sParsedSymb) {
 
 // tokenize : transformer les données en une liste
 GiftParser.prototype.tokenize = function(data) {
-    // Expression régulière pour capturer chaque séparateur individuellement, y compris '{~' et '~='
-    const separator = /(::|{~|~=|~|{|}|\[html\]|\/\/|=|\r\n)/g;
+    // Expression régulière mise à jour pour inclure les séparateurs comme '[markdown]', '[html]', etc.
+    const separator = /(::|{~|~=|~|{|}|\[markdown\]|\[html\]|\/\/|=|\r\n)/g;
 
-    // Remplacer les combinaisons comme '{~' et '~=' par des tokens distincts
+    // Découper la chaîne en utilisant les séparateurs définis
     let result = data.split(separator);
 
-    // Filtrage des éléments vides ou de retour à la ligne
+    // Filtrer les éléments vides, les espaces ou les retours à la ligne inutiles
     result = result.filter((val) => val !== "" && val !== "\r\n" && val.trim() !== "");
 
-    // Traiter les tokens '{~' et '~=' comme des tokens séparés
+    // Traiter les cas spécifiques comme '{~' et '~=' pour les convertir en tokens séparés
     result = result.flatMap(token => {
         if (token === "{~") return ["{", "~"];
         if (token === "~=") return ["~", "="];
@@ -111,7 +111,8 @@ GiftParser.prototype.comment = function (input) {
 // question = en-tête + corps + réponses + texte additionnel
 GiftParser.prototype.question = function (input) {
     const question = new Question();
-    question.header.push(this.questionHeader(input));
+    question.header = this.questionHeader(input);
+    question.format = this.questionFormat(input);
     question.body = this.questionBody(input);
     return question;
 };
@@ -122,6 +123,17 @@ GiftParser.prototype.questionHeader = function (input) {
     const header = this.next(input);
     this.expect("::", input);
     return header;
+};
+
+// Format de la question HTML ou Markdown
+GiftParser.prototype.questionFormat = function (input) {
+    if ("[html]" === input[0]) {
+        return this.next(input);
+    } else if ("[markdown]" === input[0]) {
+        return this.next(input);
+    }else{
+        return "";
+    }
 };
 
 // Corps de la question
@@ -175,6 +187,7 @@ GiftParser.prototype.answer = function (input) {
     } else {
         answer.correct = false;
     }
+
     answer.text = this.text(input);
     return answer;
 };

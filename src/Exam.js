@@ -1,22 +1,12 @@
 const fs = require('fs');
 const colors = require('colors');
 
-const FILE_PATH = './src/exam.json';
+const FILE_PATH = './src/tempExam.json';
 
 let Exam = function () {
 	this.questions = [];
 	this.load();
 }
-
-//question types for exam stats
-let questionTypes = new Map([
-    ['Choix Multiple', 0],
-    ['Vraie/Faux', 0],
-    ['Correspondance', 0],
-    ['Mot Manquant', 0],
-    ['Numérique', 0],
-    ['Question Ouverte', 0]
-]);
 
 
 // save the exam
@@ -56,13 +46,6 @@ Exam.prototype.addQuestion = function(question){
 		this.questions.push(question);
 		console.log("Question added to exam".green);
 		this.save();
-
-
-		function incrementQuestionType(type) {
-			if (questionTypesMap.has(type)) {
-				let currentCount = questionTypesMap.get(type);
-				questionTypesMap.set(type, currentCount + 1);  // Increment the count
-	
 	}
 }
 
@@ -88,27 +71,52 @@ Exam.prototype.isValid = function(){
 };
 
 Exam.prototype.getQuestionsTypes = function(){
-	this.questions.forEach((examQuestions) => {
-		type = examQuestions.type
+	let QuestionsTypes = new Map([
+			['Choix Multiple', 0],
+			['Vraie/Faux', 0],
+			['Correspondance', 0],
+			['Mot Manquant', 0],
+			['Numérique', 0],
+			['Question Ouverte', 0],
+			['Undefined', 0],
+		]);
 
+	this.questions.forEach((examQuestions) => {
+
+		var type = examQuestions.type
+		//console.log(type)
+			
 		switch (type) {
-			case value:
-				
+			case "1:MC:":
+				QuestionsTypes.set("Choix Multiple", QuestionsTypes.get("Choix Multiple") + 1);
+				break;
+			case "1:SA:":
+				QuestionsTypes.set("Correspondance", QuestionsTypes.get("Correspondance") + 1);
+				break;
+			case "1:XX:":
+				QuestionsTypes.set(type, QuestionsTypes.get("Choix Multiple") + 1);
+				break;
+			case "1:XX:":
+				QuestionsTypes.set(type, QuestionsTypes.get("Choix Multiple") + 1);
+				break;
+			case "1:XX:":
+				QuestionsTypes.set(type, QuestionsTypes.get("Choix Multiple") + 1);
 				break;
 		
 			default:
+				QuestionsTypes.set("Undefined", QuestionsTypes.get("Undefined") + 1);
 				break;
 		}
 
 	})
 
-
 	// Convert to array for Vega-Lite
-	let questionTypesData = Array.from(questionTypesMap, ([key, value]) => ({
+	let questionTypesData = Array.from(QuestionsTypes, ([key, value]) => ({
 		type: key,
-		count: value
+		count: value /this.questions.length *100	//convert to %
 	}));
-	console.log(questionTypesData);
+
+
 	return questionTypesData;
 }
 

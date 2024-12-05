@@ -2,7 +2,7 @@ const {File, Question, Answer,Answers} = require('./File');
 
 const GiftParser = function (sTokenize, sParsedSymb) {
     this.parsedElement = [];
-    this.symb = ["::", "{~", "~=", "~", '{', '}', '[html]', ':', '//', "=", '[markdown]',"$"];
+    this.symb = ["::", "{~", "~=", "~", '{', '}', '[html]', ':', '//', "=", '[markdown]', "$", '#'];
     this.showTokenize = sTokenize;
     this.showParsedSymbols = sParsedSymb;
     this.errorCount = 0;
@@ -12,7 +12,7 @@ const GiftParser = function (sTokenize, sParsedSymb) {
 // tokenize : transformer les données en une liste
 GiftParser.prototype.tokenize = function(data) {
     // Expression régulière mise à jour pour inclure les séparateurs comme '[markdown]', '[html]', etc.
-    const separator = /(::|{~|~=|~|{|}|\[markdown\]|\[html\]|\/\/|=|\r\n)/g;
+    const separator = /(::|{~|~=|~|{|}|\[markdown\]|\[html\]|\/\/|=|\r\n|#|\$)/g;
 
     // Découper la chaîne en utilisant les séparateurs définis
     let result = data.split(separator);
@@ -24,6 +24,7 @@ GiftParser.prototype.tokenize = function(data) {
     result = result.flatMap(token => {
         if (token === "{~") return ["{", "~"];
         if (token === "~=") return ["~", "="];
+        if (token === "$") return ["$"]; // Ajout de la gestion pour le symbole '$'
         return [token];
     });
 
@@ -94,8 +95,8 @@ GiftParser.prototype.listElement = function (input) {
 
 // élément = question / commentaire
 GiftParser.prototype.element = function (input, file) {
-    if ("$" === input[0].charAt(0)) {
-        file.instructions.push(input[0]);
+    if (this.check("$", input)) {
+        file.instructions.push(this.next(input));
         this.next(input);
     }
     if (this.check("//", input)) {
@@ -159,22 +160,29 @@ GiftParser.prototype.questionBody = function (input,question) {
 
 // Réponses
 GiftParser.prototype.typeQuestion = function (input) {
-    // Texte optionnel avant les réponses (exemples : {1:MC:~with~=about})
-    const optionalTextRegex = /^\d+:[A-Z]+:/; // Ex : 1:MC: ou 2:TF:, etc.
+    // Expression régulière pour extraire tout ce qui est avant les symboles ['~', '=', '#']
+    const optionalTextRegex = /^[^~=#]+/; // Correspond à tout avant '~', '=', ou '#'
+
     let type = "";
     if (optionalTextRegex.test(input[0])) {
         const match = input[0].match(optionalTextRegex);
         if (match) {
-            type = match[0];
-            this.next(input);
+            type = match[0]; // Récupère la partie avant '~', '=', ou '#'
+            this.next(input); // Passe à l'élément suivant
         }
     }
     return type;
-}
+};
+
 
 GiftParser.prototype.answers = function (input,question) {
     const answers = new Answers();
     this.expect("{", input);
+
+    if (input[0] === '}' ){
+        return answers;
+    }
+
     question.type = this.typeQuestion(input);
 
     while (!this.check("}", input) && input.length > 0) {
@@ -188,23 +196,47 @@ GiftParser.prototype.answers = function (input,question) {
 // Une réponse individuelle
 GiftParser.prototype.answer = function (input) {
     let answer = new Answer();
-    const nextSymbol = this.next(input);
-    if (nextSymbol === '~') {
-        let nextSymbol = this.next(input);
-        if (nextSymbol === '=') {
-            answer.correct = true;
-            answer.text = this.next(input);
-            return answer
-        } else {
-            answer.text = nextSymbol;
-            answer.correct = false;
+    let nextSymbol = this.next(input);
 
-        }
-    } else if (nextSymbol === '=') {
-        answer.correct = true;
-        answer.text = this.next(input);
-        return answer
+
+    // Si le symbole n'est ni ~, ni =, ni #, on l'assigne au texte de la réponse.
+    if (!['~', '=', '#'].includes(nextSymbol)) {
+        answer.text = nextSymbol;
+        nextSymbol = this.next(input);  // Passe au prochain symbole.
     }
+
+    // Traitement des réponses et du feedback.
+    switch (nextSymbol) {
+        case '~': {
+            nextSymbol = this.next(input);
+            if (nextSymbol === '=') {
+                answer.correct = true;
+                answer.text = this.next(input);  // Récupère le texte pour la réponse correcte.
+            } else {
+                answer.text = nextSymbol;
+                answer.correct = false;  // Marque la réponse comme incorrecte.
+            }
+            break;
+        }
+        case '=': {
+            answer.correct = true;
+            answer.text = this.next(input);  // Récupère le texte pour la réponse correcte.
+            break;
+        }
+        case '#': {
+            nextSymbol = this.next(input);
+            if (nextSymbol === '=') {
+                answer.feedback = '=' + this.next(input);  // Récupère le feedback avec '='.
+            } else {
+                answer.feedback = nextSymbol;  // Sinon, récupère le feedback classique.
+            }
+            break;
+        }
+        default: {
+            answer.text = nextSymbol;  // Si c'est un autre symbole, on l'assigne au texte de la réponse.
+        }
+    }
+
     return answer;
 };
 

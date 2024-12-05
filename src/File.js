@@ -25,6 +25,7 @@ let Question = function () {
 }
 let Answers = function () {
     this.list = [];
+    this.text = "";
 }
 
 let Answer = function (correct, text, feedback) {

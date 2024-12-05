@@ -57,7 +57,6 @@ cli
 
 			for (let i = 0; i < parser.parsedElement.length; i++) {		//iterate over parsedElement , on file
 				for (let k = 0; k < parser.parsedElement[i].questions.length; k++) {	//iterate over questions of the file
-
 					var question = parser.parsedElement[i].questions[k]
 
 					if (question.header.match(textToSearch, 'i')) {
@@ -66,20 +65,17 @@ cli
 				}
 			}
 			logger.info("%s", JSON.stringify(filteredElements, null, 2));
-
-
 		}else{
 			logger.info("The .gift file contains error".red);
 		}
-	
 		});
 	})
 
 
     // select a question from it question header/ID   EF01
 	.command('select', 'select a question with from it question header')
-	.argument('<file>', 'The Vpf file to search')
-	.argument('<headerText>', 'The text to look for in question\'s body')
+	.argument('<file>', 'The Gift file to search')
+	.argument('<headerText>', 'The text to look for in question\'s header')
 	.action(({args, options, logger}) => {
 		fs.readFile(args.file, 'utf8', function (err,data) {
 		if (err) {
@@ -112,7 +108,6 @@ cli
 					logger.info("No question found, Please enter a more accurate Question header identifier !".red);
 					break;
 				case 1:
-					logger.info("%s", JSON.stringify(filteredElements, null, 2));
 					exam.addQuestion(question)
 					exam.show()
 					break;
@@ -127,31 +122,30 @@ cli
 		});
 	})
 
-	// verify exam integrity  EF03 
+	// clear exam  EF02
 	.command('clearExam', 'Clear all question in the exam')
 	.action(({args, options, logger}) => {
 		exam.clear()
 	})
 
-    // verify exam integrity  EF03 
-	.command('verifyExam', 'Verify exam integrity')
-	.action(({args, options, logger}) => {
-		exam.isValid()
-	})
-
     // export exam in GIFT format   EF02
-	.command('export', 'select a question with from it question header')
+	.command('exportExam', 'select a question with from it question header')
 	.action(({args, options, logger}) => {
 
-  
-	
-            //TODO export command
+		if (exam.isValid()) {
+			//TODO export command
             //if betwin 15 and 20 question in exam , allow the export and no multiple same question
             //cal verify exam command, if true :
             //export the selected questions in a GIFT file
-			
 
+		}
+  
+	})
 
+	// verify exam integrity  EF03 
+	.command('verifyExam', 'Verify exam integrity')
+	.action(({args, options, logger}) => {
+		exam.isValid()
 	})
 
     // generate prof VCARD file    EF04
@@ -217,6 +211,8 @@ cli
 		
 		if(parser.errorCount === 0){
 
+
+			
 			//TODO stats command
             //get question from exam, count question types, and make graph
 			

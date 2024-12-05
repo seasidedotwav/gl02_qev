@@ -110,8 +110,7 @@ GiftParser.prototype.comment = function (input) {
 
 // question = en-tête + corps + réponses + texte additionnel
 GiftParser.prototype.question = function (input) {
-    const question = new Question();
-    question.header.push(this.questionHeader(input));  // En-tête de la question
+    const question = new Question(this.questionHeader(input));
     question.body = this.questionBody(input);          // Corps de la question
     // Réponses
 

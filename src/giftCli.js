@@ -17,16 +17,16 @@ cli
             if (err) {
                 return logger.warn(err);
             }
-            var analyzer = new GiftParser(options.showTokenize, options.showSymbols);
-            analyzer.parse(data);
+            var parser = new GiftParser(options.showTokenize, options.showSymbols);
+            parser.parse(data);
 
-            if (analyzer.errorCount === 0) {
+            if (parser.errorCount === 0) {
                 logger.info("The .gift file is a valid vpf file".green);
             } else {
                 logger.info("The .gift file contains error".red);
             }
 
-            logger.debug(analyzer.parsedElement);
+            logger.debug(parser.parsedElement);
 
         });
 
@@ -43,13 +43,34 @@ cli
 			return logger.warn(err);
 		}
   
-		analyzer = new GiftParser();
-		analyzer.parse(data);
+		parser = new GiftParser();
+		parser.parse(data);
 		
-		if(analyzer.errorCount === 0){
+		if(parser.errorCount === 0){
 			var textToSearch = new RegExp(args.bodyText);
-			var filteredElements = analyzer.parsedElement.filter( item => item.questionBody.match(textToSearch, 'i'));
+
+			var filteredElements = []
+
+			logger.info("%s","file here !! lke g "+ parser.parsedElement[0]);
+			//logger.info("%s", JSON.stringify(parser.parsedElement, null, 2));
+
+			for (let i = 0; i < parser.parsedElement.length; i++) {		//iterate over pardedElement , on file
+				
+				logger.info(parser.parsedElement[i].questions)
+				
+				for (let k = 0; k < parser.parsedElement[i].questions.length; k++) {	//iterate over questions of the file
+
+					var question = parser.parsedElement[i].questions[k]
+
+					if (question.header.match(textToSearch, 'i')) {
+						filteredElements.push(question)
+						console.log(question)
+					}
+				}
+			
+			}
 			logger.info("%s", JSON.stringify(filteredElements, null, 2));
+
 			
 		}else{
 			logger.info("The .gift file contains error".red);
@@ -69,12 +90,12 @@ cli
 			return logger.warn(err);
 		}
   
-		analyzer = new GiftParser();
-		analyzer.parse(data);
+		parser = new GiftParser();
+		parser.parse(data);
 		
-		if(analyzer.errorCount === 0){
+		if(parser.errorCount === 0){
 			var questionHeader = new RegExp(args.headerText);
-			var filteredElements = analyzer.parsedElement.filter( item => item.questionBody.match(questionHeader, 'i'));
+			var filteredElements = parser.parsedElement.filter( item => item.questionBody.match(questionHeader, 'i'));
 
             //TODO  if length of selected element == 1 add this element in the exam
             //else logger.info("Please enter the exact question ID".red);
@@ -96,10 +117,10 @@ cli
 			return logger.warn(err);
 		}
   
-		analyzer = new GiftParser();
-		analyzer.parse(data);
+		parser = new GiftParser();
+		parser.parse(data);
 		
-		if(analyzer.errorCount === 0){
+		if(parser.errorCount === 0){
 			
             //TODO verify command
             //verify if betwin 15 and 20 question in exam 
@@ -121,10 +142,10 @@ cli
 			return logger.warn(err);
 		}
   
-		analyzer = new GiftParser();
-		analyzer.parse(data);
+		parser = new GiftParser();
+		parser.parse(data);
 		
-		if(analyzer.errorCount === 0){
+		if(parser.errorCount === 0){
 			
             //TODO export command
             //if betwin 15 and 20 question in exam , allow the export and no multiple same question
@@ -172,10 +193,10 @@ cli
 			return logger.warn(err);
 		}
   
-		analyzer = new GiftParser();
-		analyzer.parse(data);
+		parser = new GiftParser();
+		parser.parse(data);
 		
-		if(analyzer.errorCount === 0){
+		if(parser.errorCount === 0){
 			
             //TODO start
             //start the exam , give point for good answer etc..
@@ -197,10 +218,10 @@ cli
 			return logger.warn(err);
 		}
   
-		analyzer = new GiftParser();
-		analyzer.parse(data);
+		parser = new GiftParser();
+		parser.parse(data);
 		
-		if(analyzer.errorCount === 0){
+		if(parser.errorCount === 0){
 
 			//TODO stats command
             //get question from exam, count question types, and make graph
@@ -253,10 +274,10 @@ cli
 			return logger.warn(err);
 		}
   
-		analyzer = new GiftParser();
-		analyzer.parse(data);
+		parser = new GiftParser();
+		parser.parse(data);
 		
-		if(analyzer.errorCount === 0){
+		if(parser.errorCount === 0){
 
 			//TODO compare command
             //get question type , like graph in EF05 and compare to officials exam

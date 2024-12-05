@@ -3,7 +3,7 @@ const giftParser = require('../GiftParser');
 const fs = require('fs');
 
 describe("Program Syntactic testing of GiftParser", function(){
-    beforeAll(function() {
+    beforeEach(function() {
         this.analyzer = new giftParser();
 
     });
@@ -23,8 +23,6 @@ describe("Program Syntactic testing of GiftParser", function(){
         let file = fs.readFileSync('../SujetB_data/U3-p30-Reading.gift', 'utf8');
         this.analyzer.parse(file);
         let parsed = this.analyzer.parsedElement;
-        console.log(parsed);
-        console.log(parsed[0].questions);
         expect(parsed.length).toBe(1);
         expect(parsed[0].comments.length).toBe(2);
         expect(parsed[0].questions.length).toBe(6);
@@ -36,6 +34,16 @@ describe("Program Syntactic testing of GiftParser", function(){
 
     });
     // TODO U3-p31-Gra-ed_adjectives_prepositions.gift
+    it("test optional text in questions ('1:MC:') U3-p31-Gra-ed_adjectives_prepositions.gift", function () {
+        let file = fs.readFileSync('../SujetB_data/U3-p31-Gra-ed_adjectives_prepositions.gift', 'utf8');
+        this.analyzer.parse(file);
+        let parsed = this.analyzer.parsedElement;
+        console.log(parsed);
+        console.log(parsed[0].questions);
+        expect(parsed.length).toBe(1);
+        expect(parsed[0].comments.length).toBe(0);
+        expect(parsed[0].questions.length).toBe(1);
+    });
 
     // TODO EM-U5-p38-Passive.gift
 

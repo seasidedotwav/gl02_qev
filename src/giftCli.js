@@ -17,16 +17,16 @@ cli
             if (err) {
                 return logger.warn(err);
             }
-            var analyzer = new GiftParser(options.showTokenize, options.showSymbols);
-            analyzer.parse(data);
+            var parser = new GiftParser(options.showTokenize, options.showSymbols);
+            parser.parse(data);
 
-            if (analyzer.errorCount === 0) {
+            if (parser.errorCount === 0) {
                 logger.info("The .gift file is a valid vpf file".green);
             } else {
                 logger.info("The .gift file contains error".red);
             }
 
-            logger.debug(analyzer.parsedElement);
+            logger.debug(parser.parsedElement);
 
         });
 
@@ -43,18 +43,31 @@ cli
 			return logger.warn(err);
 		}
   
-		analyzer = new GiftParser();
-		analyzer.parse(data);
+		parser = new GiftParser();
+		parser.parse(data);
 		
-		if(analyzer.errorCount === 0){
+		if(parser.errorCount === 0){
 			var textToSearch = new RegExp(args.bodyText);
-			var filteredElements = analyzer.parsedElement.filter( item => item.questionBody.match(textToSearch, 'i'));
+
+			var filteredElements = []
+
+			for (let i = 0; i < parser.parsedElement.length; i++) {		//iterate over parsedElement , on file
+				for (let k = 0; k < parser.parsedElement[i].questions.length; k++) {	//iterate over questions of the file
+
+					var question = parser.parsedElement[i].questions[k]
+
+					if (question.header.match(textToSearch, 'i')) {
+						filteredElements.push(question)
+					}
+				}
+			}
 			logger.info("%s", JSON.stringify(filteredElements, null, 2));
-			
+
+
 		}else{
 			logger.info("The .gift file contains error".red);
 		}
-		
+	
 		});
 	})
 
@@ -69,17 +82,42 @@ cli
 			return logger.warn(err);
 		}
   
-		analyzer = new GiftParser();
-		analyzer.parse(data);
+		parser = new GiftParser();
+		parser.parse(data);
 		
-		if(analyzer.errorCount === 0){
-			var questionHeader = new RegExp(args.headerText);
-			var filteredElements = analyzer.parsedElement.filter( item => item.questionBody.match(questionHeader, 'i'));
+		if(parser.errorCount === 0){
+			var textToSearch = new RegExp(args.headerText);
 
-            //TODO  if length of selected element == 1 add this element in the exam
-            //else logger.info("Please enter the exact question ID".red);
+			var filteredElements = []
 
-			logger.info("%s", JSON.stringify(filteredElements, null, 2));
+			for (let i = 0; i < parser.parsedElement.length; i++) {		//iterate over parsedElement , on file
+				for (let k = 0; k < parser.parsedElement[i].questions.length; k++) {	//iterate over questions of the file
+
+					var question = parser.parsedElement[i].questions[k]
+
+					if (question.header.match(textToSearch, 'i')) {
+						filteredElements.push(question)
+					}
+				}
+			}
+
+			//check if lenght of filtered element ==1 to confirm selection
+			switch (filteredElements.length) {
+				case 0:
+					logger.info("No question found, Please enter a more accurate Question header identifier !".red);
+					break;
+				case 1:
+					logger.info("%s", JSON.stringify(filteredElements, null, 2));
+					logger.info("Ellement added to exam !".green);
+					//TODO  add the question to the exam 	create a new file with list of exam ?, an exam object ??
+					break;
+			
+				default:
+					logger.info("%s", JSON.stringify(filteredElements, null, 2));
+					logger.info("Too many question selected, Please enter a more accurate Question header identifier !".red);
+					break;
+			}
+				
 			
 		}else{
 			logger.info("The .gift file contains error".red);
@@ -91,52 +129,33 @@ cli
     // verify exam integrity  EF03 
 	.command('verifyExam', 'Verify exam integrity')
 	.action(({args, options, logger}) => {
-		fs.readFile(args.file, 'utf8', function (err,data) {
-		if (err) {
-			return logger.warn(err);
-		}
-  
-		analyzer = new GiftParser();
-		analyzer.parse(data);
-		
-		if(analyzer.errorCount === 0){
-			
+
+
+
+
             //TODO verify command
             //verify if betwin 15 and 20 question in exam 
             //verify no multiple same question 
 			
 
-		}else{
-			logger.info("The .gift file contains error".red);
-		}
+
 		
-		});
+
 	})
 
     // export exam in GIFT format   EF02
-	.command('exportExam', 'select a question with from it question header')
+	.command('export', 'select a question with from it question header')
 	.action(({args, options, logger}) => {
-		fs.readFile(args.file, 'utf8', function (err,data) {
-		if (err) {
-			return logger.warn(err);
-		}
+
   
-		analyzer = new GiftParser();
-		analyzer.parse(data);
-		
-		if(analyzer.errorCount === 0){
-			
+	
             //TODO export command
             //if betwin 15 and 20 question in exam , allow the export and no multiple same question
             //cal verify exam command, if true :
             //export the selected questions in a GIFT file
 			
 
-		}else{
-			logger.info("The .gift file contains error".red);
-		}
-		
-		});
+
 	})
 
     // generate prof VCARD file    EF04
@@ -172,12 +191,12 @@ cli
 			return logger.warn(err);
 		}
   
-		analyzer = new GiftParser();
-		analyzer.parse(data);
+		parser = new GiftParser();
+		parser.parse(data);
 		
-		if(analyzer.errorCount === 0){
+		if(parser.errorCount === 0){
 			
-            //TODO start
+            //TODO start command
             //start the exam , give point for good answer etc..
 			
 
@@ -197,10 +216,10 @@ cli
 			return logger.warn(err);
 		}
   
-		analyzer = new GiftParser();
-		analyzer.parse(data);
+		parser = new GiftParser();
+		parser.parse(data);
 		
-		if(analyzer.errorCount === 0){
+		if(parser.errorCount === 0){
 
 			//TODO stats command
             //get question from exam, count question types, and make graph
@@ -253,10 +272,10 @@ cli
 			return logger.warn(err);
 		}
   
-		analyzer = new GiftParser();
-		analyzer.parse(data);
+		parser = new GiftParser();
+		parser.parse(data);
 		
-		if(analyzer.errorCount === 0){
+		if(parser.errorCount === 0){
 
 			//TODO compare command
             //get question type , like graph in EF05 and compare to officials exam

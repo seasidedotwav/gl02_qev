@@ -18,8 +18,8 @@ let File = function (id, questions, text) {
     this.questions = [];
 }
 
-let Question = function () {
-    this.header = [];
+let Question = function (header) {
+    this.header = header;
     this.body = [];
 }
 

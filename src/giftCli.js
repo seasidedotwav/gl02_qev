@@ -2,8 +2,9 @@ const fs = require('fs');
 const colors = require('colors');
 const GiftParser = require('./GiftParser.js');
 const Exam = require('./Exam.js');
-const vg = require('vega');
-const vegalite = require('vega-lite');
+const vega = require('vega');
+const vegaLite = require('vega-lite');
+const { createCanvas } = require('canvas');
 
 const cli = require("@caporal/core").default;
 
@@ -40,7 +41,7 @@ cli
     // search a question by the question text   EF01
 	.command('search', 'Free text search on questions body text')
 	.argument('<file>', 'The Vpf file to search')
-	.argument('<bodyText>', 'The text to look for in question\'s body')
+	.argument('<bodyText>', 'The text to look for in question\'s header')
 	.action(({args, options, logger}) => {
 		fs.readFile(args.file, 'utf8', function (err,data) {
 		if (err) {
@@ -57,7 +58,6 @@ cli
 
 			for (let i = 0; i < parser.parsedElement.length; i++) {		//iterate over parsedElement , on file
 				for (let k = 0; k < parser.parsedElement[i].questions.length; k++) {	//iterate over questions of the file
-
 					var question = parser.parsedElement[i].questions[k]
 
 					if (question.header.match(textToSearch, 'i')) {
@@ -66,20 +66,17 @@ cli
 				}
 			}
 			logger.info("%s", JSON.stringify(filteredElements, null, 2));
-
-
 		}else{
 			logger.info("The .gift file contains error".red);
 		}
-	
 		});
 	})
 
 
     // select a question from it question header/ID   EF01
 	.command('select', 'select a question with from it question header')
-	.argument('<file>', 'The Vpf file to search')
-	.argument('<headerText>', 'The text to look for in question\'s body')
+	.argument('<file>', 'The Gift file to search')
+	.argument('<headerText>', 'The text to look for in question\'s header')
 	.action(({args, options, logger}) => {
 		fs.readFile(args.file, 'utf8', function (err,data) {
 		if (err) {
@@ -112,9 +109,7 @@ cli
 					logger.info("No question found, Please enter a more accurate Question header identifier !".red);
 					break;
 				case 1:
-					logger.info("%s", JSON.stringify(filteredElements, null, 2));
-					exam.addQuestion(question)
-					exam.show()
+					exam.addQuestion(filteredElements[0])
 					break;
 				default:
 					logger.info("%s", JSON.stringify(filteredElements, null, 2));
@@ -127,31 +122,30 @@ cli
 		});
 	})
 
-	// verify exam integrity  EF03 
+	// clear exam  EF02
 	.command('clearExam', 'Clear all question in the exam')
 	.action(({args, options, logger}) => {
 		exam.clear()
 	})
 
-    // verify exam integrity  EF03 
-	.command('verifyExam', 'Verify exam integrity')
-	.action(({args, options, logger}) => {
-		exam.isValid()
-	})
-
     // export exam in GIFT format   EF02
-	.command('export', 'select a question with from it question header')
+	.command('exportExam', 'select a question with from it question header')
 	.action(({args, options, logger}) => {
 
-  
-	
-            //TODO export command
+		if (exam.isValid()) {
+			//TODO export command
             //if betwin 15 and 20 question in exam , allow the export and no multiple same question
             //cal verify exam command, if true :
             //export the selected questions in a GIFT file
-			
 
+		}
+  
+	})
 
+	// verify exam integrity  EF03 
+	.command('verifyExam', 'Verify exam integrity')
+	.action(({args, options, logger}) => {
+		exam.isValid()
 	})
 
     // generate prof VCARD file    EF04
@@ -205,113 +199,123 @@ cli
 
     //stats  Show a graph about questions types in exam   EF06
 	.command('stats', 'Show a graph about questions types in exam')
-	.argument('<file>', 'The GIFT file to use for create a graph')
 	.action(({args, options, logger}) => {
-		fs.readFile(args.file, 'utf8', function (err,data) {
-		if (err) {
-			return logger.warn(err);
-		}
-  
-		parser = new GiftParser();
-		parser.parse(data);
-		
-		if(parser.errorCount === 0){
 
-			//TODO stats command
-            //get question from exam, count question types, and make graph
-			
+		QuestionsType = exam.getQuestionsTypes();
 
-            //create graph stats //to modif
-            var statsChart = {  
-				//"width": 320,
-				//"height": 460,
-				"data" : {
-						"values" : value//value of the graph
-				},
-				"mark" : "bar",
-				"encoding" : {
-					"x" : {"field" : "name", "type" : "nominal",
-							"axis" : {"title" : "Restaurants' name."}
-						},
-					"y" : {"field" : "averageRatings", "type" : "quantitative",
-							"axis" : {"title" : "Average ratings for "+args.file+"."}
-						}
-				}
+		//create graph stats //to modif
+		var statsChart = {  
+			"width": 230,
+			"height": 280,
+			"data" : {
+					"values" : QuestionsType
+			},
+			"mark" : "bar",
+			"encoding" : {
+				"x" : {"field" : "type", "type" : "nominal",
+						"axis" : {"title" : "Questions Types"}
+					},
+				"y" : {"field" : "count", "type" : "quantitative",
+						"axis" : {"title" : "Question %"}
+					},
 			}
-
-            const myChart = vegalite.compile(statsChart).spec;
-            //show the graph canvas
-            var runtime = vg.parse(myChart);
-			var view = new vg.View(runtime).renderer('canvas').background("#FFF").run();
-			var myCanvas = view.toCanvas();
-			myCanvas.then(function(res){
-				fs.writeFileSync("./result.png", res.toBuffer());
-				view.finalize();
-				logger.info(myChart);
-				logger.info("Chart output : ./result.png");
-			})
-
-
-		}else{
-			logger.info("The .gift file contains error".red);
 		}
-		});
+
+		// Compile the Vega-Lite chart to a Vega specification
+		const vegaSpec = vegaLite.compile(statsChart).spec;
+
+		// Parse the Vega specification
+		var runtime = vega.parse(vegaSpec);
+		var view = new vega.View(runtime).renderer('canvas').background("#FFF").run();
+		var myCanvas = view.toCanvas();
+		myCanvas.then(function(res){
+			fs.writeFileSync("./src/ExamStats.png", res.toBuffer());
+			view.finalize();
+			logger.info("Chart output : ./src/ExamStats.png");
+		})	
+
 	})
 
 
     //compareExam  Show a graph who compare the % of question type betwin our exam and the typical/national exam   EF07
 	.command('compare', 'show graph of comparaison to typical/national exam')
-	.argument('<file>', 'the GIFT file to compare')
 	.action(({args, options, logger}) => {
-		fs.readFile(args.file, 'utf8', function (err,data) {
-		if (err) {
-			return logger.warn(err);
-		}
-  
-		parser = new GiftParser();
-		parser.parse(data);
-		
-		if(parser.errorCount === 0){
 
-			//TODO compare command
-            //get question type , like graph in EF05 and compare to officials exam
-			
+		//get exam types
+		QuestionsType = exam.getQuestionsTypes();
 
-            //create graph stats //to modif
-            var comparedGraph = {  
-				//"width": 320,
-				//"height": 460,
-				"data" : {
-						"values" : value//value of the graph
+		//officla exam types proportion
+		officialQuestionType = [
+			{"type": "Choix Multiple", "officialCount": 30},
+			{"type": "Vraie/Faux", "officialCount": 25},
+			{"type": "Correspondance", "officialCount": 5},
+			{"type": "Mot Manquant", "officialCount": 10},
+			{"type": "Numérique", "officialCount": 10},
+			{"type": "Question Ouverte", "officialCount": 20},
+		  ]
+
+		// Merge the two datasets based on the question type
+		const combinedData = QuestionsType.map(qt => {
+			const official = officialQuestionType.find(o => o.type === qt.type);
+			return [
+				{ type: qt.type, category: "Exam", value: qt.count },
+				{ type: qt.type, category: "OfficialExam", value: official ? official.officialCount : 0 }
+			];
+		}).flat();
+
+		console.log(combinedData)
+
+		//can't do combined graph , that work on online vega editor, but error :
+		//WARN xOffset-encoding is dropped as xOffset is not a valid encoding channel.
+		//when on local
+
+		//create graph stats //to modif
+		var comparedGraph =  
+			{
+				"$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+				"data": {
+    			"values": combinedData
 				},
-				"mark" : "bar",
-				"encoding" : {
-					"x" : {"field" : "name", "type" : "nominal",
-							"axis" : {"title" : "Restaurants' name."}
-						},
-					"y" : {"field" : "averageRatings", "type" : "quantitative",
-							"axis" : {"title" : "Average ratings for "+args.file+"."}
-						}
+				"mark": "bar",
+				"encoding": {
+					"x": {
+					"field": "type",
+					"type": "nominal",
+					"title": "Question Type"
+					},
+					"y": {
+					"field": "value",
+					"type": "quantitative",
+					"title": "Quastion %"
+					},
+					"color": {
+					"field": "category",
+					"type": "nominal",
+					"title": "Category",
+					"legend": null 
+					},
+					"facet": {
+					"field": "category",
+					"type": "nominal",
+					"columns": 2,
+					"title": null  // This can be adjusted depending on your needs
+					}
 				}
-			}
-
-            const myChart = vegalite.compile(comparedGraph).spec;
-            //show the graph canvas
-            var runtime = vg.parse(myChart);
-			var view = new vg.View(runtime).renderer('canvas').background("#FFF").run();
-			var myCanvas = view.toCanvas();
-			myCanvas.then(function(res){
-				fs.writeFileSync("./result.png", res.toBuffer());
-				view.finalize();
-				logger.info(myChart);
-				logger.info("Chart output : ./result.png");
-			})
+				};
 
 
-		}else{
-			logger.info("The .gift file contains error".red);
-		}
-		});
+		// Compile the Vega-Lite chart to a Vega specification
+		const vegaSpec = vegaLite.compile(comparedGraph).spec;
+
+		// Parse the Vega specification
+		var runtime = vega.parse(vegaSpec);
+		var view = new vega.View(runtime).renderer('canvas').background("#FFF").run();
+		var myCanvas = view.toCanvas();
+		myCanvas.then(function(res){
+			fs.writeFileSync("./src/ComparedExam.png", res.toBuffer());
+			view.finalize();
+			logger.info("Chart output : ./src/ComparedExam.png");
+		})
 	})
 
 cli.run(process.argv.slice(2));

@@ -1,19 +1,20 @@
 const fs = require('fs');
 const colors = require('colors');
 
-const FILE_PATH = './exam.json';
+const FILE_PATH = './src/tempExam.json';
 
 let Exam = function () {
 	this.questions = [];
 	this.load();
 }
 
-// Add a method to save the state to a file
+
+// save the exam
 Exam.prototype.save = function () {
     fs.writeFileSync(FILE_PATH, JSON.stringify(this.questions, null, 2));
 };
 
-// Add a method to load the state from a file
+// load exam
 Exam.prototype.load = function () {
     if (fs.existsSync(FILE_PATH)) {
         this.questions = JSON.parse(fs.readFileSync(FILE_PATH, 'utf-8'));
@@ -35,7 +36,7 @@ Exam.prototype.addQuestion = function(question){
 	//check if question already in exam
 	this.questions.forEach((examQuestion) => {
 		if (examQuestion.header == question.header) {
-			console.log("Questin already in exam".red);
+			console.log("Question already in exam".red);
 			isDuplicated = true;
 		} 
 	});	
@@ -45,33 +46,90 @@ Exam.prototype.addQuestion = function(question){
 		this.questions.push(question);
 		console.log("Question added to exam".green);
 		this.save();
-	
 	}
 }
 
-Exam.prototype.start = function(){
-	//TODO start the exam , show questions , ask anser etc 
-};
-
 //show exam's question
 Exam.prototype.show = function(){
-	console.log(this.questions)
+	console.log("---------------------- Questions in the current Exam ------------------------".blue)
 	console.log("%s", JSON.stringify(this.questions, null, 2));
+	console.log("------------------------ End questions in the exam --------------------------".blue)
 };
 
 //check if exam is valid format
 Exam.prototype.isValid = function(){
 	if (this.questions.length < 15) {
-		console.log("There is not enougth question in the exam, the minimu is 15".red)
+		console.log("There is not enough question in the exam, the minimum is 15".red)
 		return false
 	} else if (this.questions.length > 20) {
-		console.log("There is not namy question in the exam, the maximum is 20".red)
+		console.log("There is too many questions in the exam, the maximum is 20".red)
 		return false
 	} else {
 		console.log("The exam is valid".green)
 		return true
 	}
 };
+
+Exam.prototype.getQuestionsTypes = function(){
+	let QuestionsTypes = new Map([
+			['Choix Multiple', 0],
+			['Vraie/Faux', 0],
+			['Correspondance', 0],
+			['Mot Manquant', 0],
+			['Numérique', 0],
+			['Question Ouverte', 0],
+			['Undefined', 0],
+		]);
+
+	this.questions.forEach((examQuestions) => {
+
+		var type = examQuestions.type
+		//console.log(type)
+			
+		switch (type) {
+			case "1:MC:":
+				QuestionsTypes.set("Choix Multiple", QuestionsTypes.get("Choix Multiple") + 1);
+				break;
+			case "1:SA:":
+				QuestionsTypes.set("Correspondance", QuestionsTypes.get("Correspondance") + 1);
+				break;
+			case "1:XX:":
+				QuestionsTypes.set(type, QuestionsTypes.get("Choix Multiple") + 1);
+				break;
+			case "1:XX:":
+				QuestionsTypes.set(type, QuestionsTypes.get("Choix Multiple") + 1);
+				break;
+			case "1:XX:":
+				QuestionsTypes.set(type, QuestionsTypes.get("Choix Multiple") + 1);
+				break;
+		
+			default:
+				QuestionsTypes.set("Undefined", QuestionsTypes.get("Undefined") + 1);
+				break;
+		}
+
+	})
+
+	// Convert to array for Vega-Lite
+	let questionTypesData = Array.from(QuestionsTypes, ([key, value]) => ({
+		type: key,
+		count: value /this.questions.length *100	//convert to %
+	}));
+
+
+	return questionTypesData;
+}
+
+//show exam's question
+Exam.prototype.export = function(){
+	console.log("Exam exported TODO !!!")
+
+	//TODO exam export 
+
+	this.questions = []
+};
+
+
 
 
 module.exports = Exam;

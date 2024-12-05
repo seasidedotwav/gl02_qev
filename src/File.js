@@ -19,11 +19,11 @@ let Question = function () {
     this.header = [];
     this.body = [];
     this.format = "";
-}
+    this.type = "";
 
+}
 let Answers = function () {
     this.list = [];
-    this.type = "";
 }
 
 let Answer = function (correct, text, feedback) {

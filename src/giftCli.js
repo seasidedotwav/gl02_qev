@@ -100,15 +100,22 @@ cli
 					}
 				}
 			}
-			//check if lenght of filtered element ==1 to confirm selection
-			if (filteredElements.length > 1) {
-				logger.info("Too many question selected, Please enter a more accurate Question header identifier !".red);
-				logger.info("%s", JSON.stringify(filteredElements, null, 2));
-			} else {
-				logger.info("%s", JSON.stringify(filteredElements, null, 2));
-				logger.info("Ellement added to exam !".green);
 
-				//TODO  add the question to the exam 	create a new file with list of exam ?, an exam object ??
+			//check if lenght of filtered element ==1 to confirm selection
+			switch (filteredElements.length) {
+				case 0:
+					logger.info("No question found, Please enter a more accurate Question header identifier !".red);
+					break;
+				case 1:
+					logger.info("%s", JSON.stringify(filteredElements, null, 2));
+					logger.info("Ellement added to exam !".green);
+					//TODO  add the question to the exam 	create a new file with list of exam ?, an exam object ??
+					break;
+			
+				default:
+					logger.info("%s", JSON.stringify(filteredElements, null, 2));
+					logger.info("Too many question selected, Please enter a more accurate Question header identifier !".red);
+					break;
 			}
 				
 			

@@ -269,30 +269,9 @@ END:VCARD`;
     //start  Start an exam   EF05
 	.command('startSimulation', 'Start an exam')
 	.action(({args, options, logger}) => {
-
-		let exam = new Exam();
-		exam.questions = [];
-		fs.readFile(args.file, 'utf8', function (err,data) {
-		if (err) {
-			return logger.warn(err);
-		}
-
-		let parser = new GiftParser();
-		parser.parse(data);
-		if(parser.errorCount === 0){
-			exam.load();
-			for (let i = 0; i < parser.parsedElement.length; i++) {
-				for (let k = 0; k < parser.parsedElement[i].questions.length; k++) {
-					exam.addQuestion(parser.parsedElement[i].questions[k]);
-				}
-			}
+		if (exam.isValid) {
 			exam.start();
-		}else{
-			logger.info("The .gift file contains error".red);
 		}
-
-		});
-
 	})
 
     //stats  Show a graph about questions types in exam   EF06

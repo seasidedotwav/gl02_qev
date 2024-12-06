@@ -168,14 +168,14 @@ Exam.prototype.addQuestion = function (question) {
 				case "Vraie/Faux":
 					QuestionsTypes.set("Vraie/Faux", QuestionsTypes.get("Vraie/Faux") + 1);
 					break;
-				case "XX":
+				case "Correspondance":
 					QuestionsTypes.set("Correspondance", QuestionsTypes.get("Correspondance") + 1);
 					break;
 				case "=":
 				case "1:SA:":
 					QuestionsTypes.set("Mot Manquant", QuestionsTypes.get("Mot Manquant") + 1);
 					break;
-				case "XX":
+				case "Numérique":
 					QuestionsTypes.set("Numérique", QuestionsTypes.get("Numérique") + 1);
 					break;
 				case "Question Ouverte":

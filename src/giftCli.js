@@ -121,8 +121,8 @@ cli
 		});
 	})
 
-	// remove last question exam  EF02
-	.command('create', 'Create a empty exam')
+	// create empty exam  EF02
+	.command('create', 'Create an empty exam')
 	.action(({args, options, logger}) => {
 		exam.create()
 	})

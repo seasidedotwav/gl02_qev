@@ -33,12 +33,13 @@ Exam.prototype.create = function () {
 
 // remove last  question
 Exam.prototype.removeLast = function () {
-	if (this.questions.length =0) {
+	if (this.questions.length ===0) {
 		console.log("This exam is already empty".red)
 	} else {
-		this.questions.pop()
+		let removed= this.questions.pop()
 		console.log("Last question has been removed".green)
 		this.save()
+		return
 	}
 };
 
@@ -64,10 +65,6 @@ Exam.prototype.addQuestion = function(question){
 
 //show exam's question
 Exam.prototype.read = function(){
-	console.log("---------------------- Questions in the current Exam ------------------------".blue)
-	console.log("%s", JSON.stringify(this.questions, null, 2));
-	console.log("------------------------ End questions in the exam --------------------------".blue)
-
 	this.questions.forEach((question)=> {
 		console.log( this.convertObjectToString(question))
 	})

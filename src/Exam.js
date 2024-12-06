@@ -214,8 +214,8 @@ Exam.prototype.addQuestion = function (question) {
 		this.questions.forEach((examQuestions) => {
 
 			var type = examQuestions.type
-			//console.log(type)
-			//TODO add rest of questions type
+
+
 			switch (type) {
 				case "1:MC:":
 				case "~":
@@ -227,6 +227,7 @@ Exam.prototype.addQuestion = function (question) {
 				case "Correspondance":
 					QuestionsTypes.set("Correspondance", QuestionsTypes.get("Correspondance") + 1);
 					break;
+				case "Mot Manquant":
 				case "=":
 				case "1:SA:":
 					QuestionsTypes.set("Mot Manquant", QuestionsTypes.get("Mot Manquant") + 1);

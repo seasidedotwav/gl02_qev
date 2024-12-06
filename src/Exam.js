@@ -60,9 +60,9 @@ Exam.prototype.start = async function () {
 				if (selectedIndex >= 0 && selectedIndex < answers.length) {
 					const selectedAnswer = answers[selectedIndex];
 					if (selectedAnswer.correct) {
-						console.log('✅ Correct answer!');
+						console.log('✅ Correct answer!'.green);
 					} else {
-						console.log('❌ Wrong answer.');
+						console.log('❌ Wrong answer.'.red);
 					}
 				} else {
 					console.log('Invalid choice. Please enter a valid number.');

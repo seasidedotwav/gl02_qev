@@ -40,8 +40,6 @@ Exam.prototype.start = async function () {
 		output: process.stdout
 	});
 	console.log("Exam started".green);
-	console.log(this.questions);
-	console.log(this.questions[0].body);
 
 	// Fonction pour poser une question et attendre la réponse
 	const askQuestion = async (question, index) => {
@@ -107,7 +105,6 @@ Exam.prototype.start = async function () {
 							resolve(); // Passe à la question suivante une fois que tout est résolu
 						};
 						handleMatchingAnswers();
-
 					} else {
 						// Si ce n'est pas une question de "Matching", on pose la question classique
 						numQuestions++;
@@ -124,13 +121,11 @@ Exam.prototype.start = async function () {
 								resolve(); // Passe à la question suivante
 							} else {
 								console.log('Invalid choice. Please enter a valid number.');
-								rl.question('Enter your answer: ', (input) => resolve()); // Redemander si l'entrée est invalide
+								rl.question('Enter your answer: ', () => resolve()); // Redemander si l'entrée est invalide
 							}
 						});
 					}
 				}
-
-				resolve(); // Passe à la prochaine question
 			});
 		});
 	};
@@ -144,7 +139,6 @@ Exam.prototype.start = async function () {
 	console.log(`\nExam finished. Your total score is: ${points} out of ${numQuestions}`);
 	rl.close();
 };
-
 
 
 

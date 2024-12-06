@@ -117,6 +117,8 @@ cli
 					logger.info("Too many question selected, Please enter a more accurate Question header identifier !".red);
 					break;
 			}
+
+
 		}else{
 			logger.info("The .gift file contains error".red);
 		}
@@ -207,6 +209,8 @@ cli
 	.command('start', 'Start an exam')
     .argument('<file>', 'Exam file to start')
 	.action(({args, options, logger}) => {
+		let exam = new Exam();
+		exam.questions = [];
 		fs.readFile(args.file, 'utf8', function (err,data) {
 		if (err) {
 			return logger.warn(err);
@@ -214,17 +218,18 @@ cli
 
 		let parser = new GiftParser();
 		parser.parse(data);
-		
 		if(parser.errorCount === 0){
-            //TODO start command
-            //start the exam , give point for good answer etc..
-			let exam = parser.parsedElement[0];
-			console.log(exam);
-			logger.info("Exam started".green);
+			exam.load();
+			for (let i = 0; i < parser.parsedElement.length; i++) {
+				for (let k = 0; k < parser.parsedElement[i].questions.length; k++) {
+					exam.addQuestion(parser.parsedElement[i].questions[k]);
+				}
+			}
+			exam.start();
 		}else{
 			logger.info("The .gift file contains error".red);
 		}
-		
+
 		});
 	})
 

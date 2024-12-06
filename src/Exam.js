@@ -26,6 +26,7 @@ Exam.prototype.load = function () {
 };
 
 Exam.prototype.create = function () {
+	this.questions = []
 	fs.writeFileSync(FILE_PATH, JSON.stringify(this.questions, null, 2));
 	console.log("Exam succesfully created".green)
 }
@@ -119,9 +120,13 @@ Exam.prototype.addQuestion = function (question) {
 
 //show exam's question
 	Exam.prototype.read = function () {
-		this.questions.forEach((question) => {
-			console.log(this.convertObjectToString(question))
-		})
+		if (this.questions.length === 0) {
+			console.log("There is no question in the exam, add questions with append command".red)
+		} else {
+			this.questions.forEach((question) => {
+				console.log(this.convertObjectToString(question))
+			})
+		}
 	};
 
 

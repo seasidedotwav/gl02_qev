@@ -90,3 +90,25 @@ Optional parameters have to be before the mandatory file parameter.
 <command> : compare
 
     Create a .png graph in folder export, compare actual exam questions types propotion from official exam proportions.
+
+### Exemple usage ###
+
+
+
+node src/giftCli.js create
+node src/giftCli.js append SujetB_data\EM-U5-p34-Voc.gift 1.1
+node src/giftCli.js append SujetB_data\U6-p65-Voc-Expressions_with_get.gift 1.2
+node src/giftCli.js append SujetB_data\U2-p22-Gra-Ing_or_inf.gift 6.2a
+node src/giftCli.js append SujetB_data\EM-U5-p34-Gra-Expressions_of_quantity.gift 2.4
+node src/giftCli.js append SujetB_data\U7-p79-Review-3.gift 3.1 
+node src/giftCli.js append SujetB_data\U2-p22-Gra-Ing_or_inf.gift 6.3b
+node src/giftCli.js append SujetB_data\EM-U5-p34-Gra-Expressions_of_quantity.gift 1.2
+node src/giftCli.js append SujetB_data\EM-U5-p34-Voc.gift 1.2
+node src/giftCli.js append SujetB_data\U6-p65-Voc-Expressions_with_get.gift 1.4
+node src/giftCli.js append SujetB_data\EM-U5-p34-Voc.gift 1.4
+node src/giftCli.js append SujetB_data\EM-U5-p34-Gra-Expressions_of_quantity.gift 1.5
+node src/giftCli.js append SujetB_data\U2-p22-Gra-Ing_or_inf.gift 6.1a
+node src/giftCli.js append SujetB_data\U7-p79-Review-3.gift 3.3
+node src/giftCli.js append SujetB_data\U2-p22-Gra-Ing_or_inf.gift 6.4b
+node src/giftCli.js append SujetB_data\EM-U5-p34-Voc.gift 1.5
+node src/giftCli.js startSimulation

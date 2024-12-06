@@ -1,5 +1,7 @@
 const fs = require('fs');
 const colors = require('colors');
+const path = require('path');
+
 
 const FILE_PATH = './src/tempExam.json';
 
@@ -121,12 +123,42 @@ Exam.prototype.getQuestionsTypes = function(){
 }
 
 //show exam's question
-Exam.prototype.export = function(){
-	console.log("Exam exported TODO !!!")
+Exam.prototype.export = function () {
+	let giftContent = "";
+	this.questions.forEach(question => {
+		// Question header
+		giftContent += `::${question.header}::\n`;
 
-	//TODO exam export 
+		// Question format (if applicable)
+		if (question.format) {
+			giftContent += `${question.format}\n`;
+		}
 
-	this.questions = []
+		// Question body
+		question.body.forEach(bodyPart => {
+			if (typeof bodyPart === 'string') {
+				giftContent += `${bodyPart}\n`;
+			} else if (bodyPart.list) {
+				giftContent += "{\n";
+				bodyPart.list.forEach(answer => {
+					const prefix = answer.correct ? "=" : "~";
+					giftContent += `  ${prefix}${answer.text}`;
+					if (answer.feedback) {
+						giftContent += `#${answer.feedback}`;
+					}
+					giftContent += "\n";
+				});
+				giftContent += "}\n";
+			}
+		});
+
+		giftContent += "\n"; // Add spacing between questions
+
+	});
+	const outputPath = path.join(process.cwd(), 'exam.gift');
+	fs.writeFileSync(outputPath, giftContent, 'utf-8');
+	console.log(`Exam successfully exported to ${outputPath}`.green);
+
 };
 
 

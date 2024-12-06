@@ -13,10 +13,11 @@
     "@caporal/core": "^3.0.2",
     "colors": "^1.4.0",
     "vega": "^5.17.0",
-    "canvas": "^2.11.2",
+    "canvas": "^3.0.0-rc2",
     "vega-lite": "^4.17.0"
   },
   "devDependencies": {
+    "eslint": "^9.16.0",
     "jasmine": "^3.6.3"
   },
   "overrides": {

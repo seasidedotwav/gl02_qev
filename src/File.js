@@ -14,6 +14,7 @@ let File = function () {
 	this.questions = [];
     this.comments = [];
     this.questions = [];
+    this.instructions = [];
 }
 let Question = function () {
     this.header = [];
@@ -24,6 +25,7 @@ let Question = function () {
 }
 let Answers = function () {
     this.list = [];
+    this.text = "";
 }
 
 let Answer = function (correct, text, feedback) {

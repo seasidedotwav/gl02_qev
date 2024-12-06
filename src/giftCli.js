@@ -26,7 +26,7 @@ cli
             parser.parse(data);
 
             if (parser.errorCount === 0) {
-                logger.info("The .gift file is a valid vpf file".green);
+                logger.info("The .gift file is a valid gift file".green);
             } else {
                 logger.info("The .gift file contains error".red);
             }
@@ -133,10 +133,7 @@ cli
 	.action(({args, options, logger}) => {
 
 		if (exam.isValid()) {
-			//TODO export command
-            //if betwin 15 and 20 question in exam , allow the export and no multiple same question
-            //cal verify exam command, if true :
-            //export the selected questions in a GIFT file
+			exam.export()
 
 		}
   
@@ -153,23 +150,53 @@ cli
 	.argument('<name>', 'prof name')
     .argument('<email>', 'prof email address')
 	.argument('<phone>', 'prof phone number')
-	.action(({args, options, logger}) => {
+	.action(({ args, options, logger }) => {
+		// Validate input fields
+		const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+		const validatePhone = (phone) => /^\d{2}(\.\d{2}){4}$/.test(phone);
 
-		
-        //get elements from command
-        var name = new RegExp(args.name);
-        var email = new RegExp(args.email);
-        var phone = new RegExp(args.phone);
+		if (!validateEmail(args.email)) {
+			return logger.info("Invalid email format. Expected format: example@domain.com".red);
+		}
 
-        //verify well formed info : email with @xxx.xx
-            //                         phone with xx.xx.xx.xx.xx
-            //if wrong data : logger.info("Incorrect data format entered".red);
+		if (!validatePhone(args.phone)) {
+			return logger.info("Invalid phone format. Expected format: xx.xx.xx.xx.xx".red);
+		}
 
-        //TODO  createProfVCARD command
-        //get the info of proff and create the vcard file
+		// Split full name into first and last names
+		const [firstName, ...lastNameParts] = args.name.split(' ');
+		const lastName = lastNameParts.join(' ') || 'Unknown';
 
-			
-	
+		// Encode special characters for VCard compliance (RFC 6868)
+		const encodeForVCard = (text) =>
+			text.replace(/\\/g, '\\\\')
+				.replace(/\n/g, '\\n')
+				.replace(/;/g, '\\;')
+				.replace(/,/g, '\\,');
+
+		// Generate VCard content
+		const vCardContent = `BEGIN:VCARD
+			VERSION:3.0
+			N:${encodeForVCard(lastName)};${encodeForVCard(firstName)};;;
+			FN:${encodeForVCard(args.name)}
+			EMAIL;TYPE=WORK:${encodeForVCard(args.email)}
+			TEL;TYPE=WORK,VOICE:${encodeForVCard(args.phone)}
+			END:VCARD`;
+
+		// Define file name for VCard
+		const fileName = `prof_${args.name.replace(/\s+/g, '_')}.vcf`;
+
+		// Write VCard file
+		const fs = require('fs');
+		fs.writeFile(fileName, vCardContent, (err) => {
+			if (err) {
+				logger.info(`Error writing VCard file: ${err.message}`.red);
+			} else {
+				logger.info(`VCard file created successfully: ${fileName}`.green);
+				logger.info(vCardContent.cyan);
+			}
+		});
+
 	})
 
     //start  Start an exam   EF05

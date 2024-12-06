@@ -201,38 +201,43 @@ cli
 	.command('stats', 'Show a graph about questions types in exam')
 	.action(({args, options, logger}) => {
 
-		QuestionsType = exam.getQuestionsTypes();
+		if (exam.isValid()) {
+			QuestionsType = exam.getQuestionsTypes();
 
-		//create graph stats //to modif
-		var statsChart = {  
-			"width": 230,
-			"height": 280,
-			"data" : {
-					"values" : QuestionsType
-			},
-			"mark" : "bar",
-			"encoding" : {
-				"x" : {"field" : "type", "type" : "nominal",
-						"axis" : {"title" : "Questions Types"}
-					},
-				"y" : {"field" : "count", "type" : "quantitative",
-						"axis" : {"title" : "Question %"}
-					},
+			//create graph stats //to modif
+			var statsChart = {  
+				"width": 230,
+				"height": 280,
+				"data" : {
+						"values" : QuestionsType
+				},
+				"mark" : "bar",
+				"encoding" : {
+					"x" : {"field" : "type", "type" : "nominal",
+							"axis" : {"title" : "Questions Types"}
+						},
+					"y" : {"field" : "count", "type" : "quantitative",
+							"axis" : {"title" : "Question %"}
+						},
+				}
 			}
+		
+
+			// Compile the Vega-Lite chart to a Vega specification
+			const vegaSpec = vegaLite.compile(statsChart).spec;
+
+			// Parse the Vega specification
+			var runtime = vega.parse(vegaSpec);
+			var view = new vega.View(runtime).renderer('canvas').background("#FFF").run();
+			var myCanvas = view.toCanvas();
+			myCanvas.then(function(res){
+				fs.writeFileSync("./src/ExamStats.png", res.toBuffer());
+				view.finalize();
+				logger.info("Chart output : ./src/ExamStats.png");
+			})	
+		} else {
+
 		}
-
-		// Compile the Vega-Lite chart to a Vega specification
-		const vegaSpec = vegaLite.compile(statsChart).spec;
-
-		// Parse the Vega specification
-		var runtime = vega.parse(vegaSpec);
-		var view = new vega.View(runtime).renderer('canvas').background("#FFF").run();
-		var myCanvas = view.toCanvas();
-		myCanvas.then(function(res){
-			fs.writeFileSync("./src/ExamStats.png", res.toBuffer());
-			view.finalize();
-			logger.info("Chart output : ./src/ExamStats.png");
-		})	
 
 	})
 
@@ -241,81 +246,83 @@ cli
 	.command('compare', 'show graph of comparaison to typical/national exam')
 	.action(({args, options, logger}) => {
 
-		//get exam types
-		QuestionsType = exam.getQuestionsTypes();
+		if (exam.isValid()) {
+			//get exam types
+			QuestionsType = exam.getQuestionsTypes();
 
-		//officla exam types proportion
-		officialQuestionType = [
-			{"type": "Choix Multiple", "officialCount": 30},
-			{"type": "Vraie/Faux", "officialCount": 25},
-			{"type": "Correspondance", "officialCount": 5},
-			{"type": "Mot Manquant", "officialCount": 10},
-			{"type": "Numérique", "officialCount": 10},
-			{"type": "Question Ouverte", "officialCount": 20},
-		  ]
+			//officla exam types proportion
+			officialQuestionType = [
+				{"type": "Choix Multiple", "officialCount": 30},
+				{"type": "Vraie/Faux", "officialCount": 25},
+				{"type": "Correspondance", "officialCount": 5},
+				{"type": "Mot Manquant", "officialCount": 10},
+				{"type": "Numérique", "officialCount": 10},
+				{"type": "Question Ouverte", "officialCount": 20},
+			]
 
-		// Merge the two datasets based on the question type
-		const combinedData = QuestionsType.map(qt => {
-			const official = officialQuestionType.find(o => o.type === qt.type);
-			return [
-				{ type: qt.type, category: "Exam", value: qt.count },
-				{ type: qt.type, category: "OfficialExam", value: official ? official.officialCount : 0 }
-			];
-		}).flat();
+			// Merge the two datasets based on the question type
+			const combinedData = QuestionsType.map(qt => {
+				const official = officialQuestionType.find(o => o.type === qt.type);
+				return [
+					{ type: qt.type, category: "Exam", value: qt.count },
+					{ type: qt.type, category: "OfficialExam", value: official ? official.officialCount : 0 }
+				];
+			}).flat();
 
-		console.log(combinedData)
+			console.log(combinedData)
 
-		//can't do combined graph , that work on online vega editor, but error :
-		//WARN xOffset-encoding is dropped as xOffset is not a valid encoding channel.
-		//when on local
+			//can't do combined graph , that work on online vega editor, but error :
+			//WARN xOffset-encoding is dropped as xOffset is not a valid encoding channel.
+			//when on local
 
-		//create graph stats //to modif
-		var comparedGraph =  
-			{
-				"$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-				"data": {
-    			"values": combinedData
-				},
-				"mark": "bar",
-				"encoding": {
-					"x": {
-					"field": "type",
-					"type": "nominal",
-					"title": "Question Type"
+			//create graph stats //to modif
+			var comparedGraph =  
+				{
+					"$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+					"data": {
+					"values": combinedData
 					},
-					"y": {
-					"field": "value",
-					"type": "quantitative",
-					"title": "Quastion %"
-					},
-					"color": {
-					"field": "category",
-					"type": "nominal",
-					"title": "Category",
-					"legend": null 
-					},
-					"facet": {
-					"field": "category",
-					"type": "nominal",
-					"columns": 2,
-					"title": null  // This can be adjusted depending on your needs
+					"mark": "bar",
+					"encoding": {
+						"x": {
+						"field": "type",
+						"type": "nominal",
+						"title": "Question Type"
+						},
+						"y": {
+						"field": "value",
+						"type": "quantitative",
+						"title": "Quastion %"
+						},
+						"color": {
+						"field": "category",
+						"type": "nominal",
+						"title": "Category",
+						"legend": null 
+						},
+						"facet": {
+						"field": "category",
+						"type": "nominal",
+						"columns": 2,
+						"title": null  // This can be adjusted depending on your needs
+						}
 					}
-				}
-				};
+					};
 
 
-		// Compile the Vega-Lite chart to a Vega specification
-		const vegaSpec = vegaLite.compile(comparedGraph).spec;
+			// Compile the Vega-Lite chart to a Vega specification
+			const vegaSpec = vegaLite.compile(comparedGraph).spec;
 
-		// Parse the Vega specification
-		var runtime = vega.parse(vegaSpec);
-		var view = new vega.View(runtime).renderer('canvas').background("#FFF").run();
-		var myCanvas = view.toCanvas();
-		myCanvas.then(function(res){
-			fs.writeFileSync("./src/ComparedExam.png", res.toBuffer());
-			view.finalize();
-			logger.info("Chart output : ./src/ComparedExam.png");
-		})
+			// Parse the Vega specification
+			var runtime = vega.parse(vegaSpec);
+			var view = new vega.View(runtime).renderer('canvas').background("#FFF").run();
+			var myCanvas = view.toCanvas();
+			myCanvas.then(function(res){
+				fs.writeFileSync("./src/ComparedExam.png", res.toBuffer());
+				view.finalize();
+				logger.info("Chart output : ./src/ComparedExam.png");
+			})
+		}
 	})
 
 cli.run(process.argv.slice(2));

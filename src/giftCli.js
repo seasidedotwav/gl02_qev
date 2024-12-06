@@ -5,6 +5,7 @@ const Exam = require('./Exam.js');
 const vega = require('vega');
 const vegaLite = require('vega-lite');
 const { createCanvas } = require('canvas');
+const {parse} = require("vega");
 
 const cli = require("@caporal/core").default;
 
@@ -210,16 +211,16 @@ cli
 		if (err) {
 			return logger.warn(err);
 		}
-  
-		parser = new GiftParser();
+
+		let parser = new GiftParser();
 		parser.parse(data);
 		
 		if(parser.errorCount === 0){
-			
             //TODO start command
             //start the exam , give point for good answer etc..
-			
-
+			let exam = parser.parsedElement[0];
+			console.log(exam);
+			logger.info("Exam started".green);
 		}else{
 			logger.info("The .gift file contains error".red);
 		}

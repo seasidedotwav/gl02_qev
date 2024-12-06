@@ -159,19 +159,24 @@ Exam.prototype.addQuestion = function (question) {
 			//TODO add rest of questions type
 			switch (type) {
 				case "1:MC:":
+				case "~":
 					QuestionsTypes.set("Choix Multiple", QuestionsTypes.get("Choix Multiple") + 1);
 					break;
-				case "1:SA:":
+				case "Vraie/Faux":
+					QuestionsTypes.set("Vraie/Faux", QuestionsTypes.get("Vraie/Faux") + 1);
+					break;
+				case "XX":
 					QuestionsTypes.set("Correspondance", QuestionsTypes.get("Correspondance") + 1);
 					break;
-				case "1:XX:":
-					QuestionsTypes.set(type, QuestionsTypes.get("Choix Multiple") + 1);
+				case "=":
+				case "1:SA:":
+					QuestionsTypes.set("Mot Manquant", QuestionsTypes.get("Mot Manquant") + 1);
 					break;
-				case "1:XX:":
-					QuestionsTypes.set(type, QuestionsTypes.get("Choix Multiple") + 1);
+				case "XX":
+					QuestionsTypes.set("Numérique", QuestionsTypes.get("Numérique") + 1);
 					break;
-				case "1:XX:":
-					QuestionsTypes.set(type, QuestionsTypes.get("Choix Multiple") + 1);
+				case "Question Ouverte":
+					QuestionsTypes.set("Question Ouverte", QuestionsTypes.get("Question Ouverte") + 1);
 					break;
 
 				default:

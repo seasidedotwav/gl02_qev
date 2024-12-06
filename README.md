@@ -1,5 +1,4 @@
 # gl02_qev
 
 
-Search command Done
-Select command Done
+//TODO write readme like the tp parser readme.md

@@ -17,6 +17,7 @@
     "vega-lite": "^4.17.0"
   },
   "devDependencies": {
+    "eslint": "^9.16.0",
     "jasmine": "^3.6.3"
   },
   "overrides": {

@@ -133,10 +133,7 @@ cli
 	.action(({args, options, logger}) => {
 
 		if (exam.isValid()) {
-			//TODO export command
-            //if betwin 15 and 20 question in exam , allow the export and no multiple same question
-            //cal verify exam command, if true :
-            //export the selected questions in a GIFT file
+			exam.export()
 
 		}
   

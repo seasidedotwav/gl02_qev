@@ -186,13 +186,12 @@ GiftParser.prototype.typeQuestion = function (input) {
             this.next(input); // Passe à l'élément suivant
         }
     }
-
-    else if (!type && input[0].startsWith('=')) {
-        type = "=";
-    }
-
     else if (!type && input[0].includes("{}")) {
         type = "Question Ouverte";
+    }
+
+    else if (!type && input.some(item => typeof item === 'string' && item.includes("->"))) {
+        type = "Correspondance";
     }
 
     else if (type.startsWith("1:MC:") || input[0].startsWith("~") || input[0].includes("~")) {
@@ -202,6 +201,11 @@ GiftParser.prototype.typeQuestion = function (input) {
     else if (type.startsWith("False") || type.startsWith("True")) {
         type = "Vraie/Faux";
     }
+
+    else if (!type && input[0].startsWith('=')) {
+        type = "=";
+    }
+
 
     return type;
 

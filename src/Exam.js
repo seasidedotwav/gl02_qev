@@ -25,6 +25,11 @@ Exam.prototype.load = function () {
     }
 };
 
+Exam.prototype.create = function () {
+	fs.writeFileSync(FILE_PATH, JSON.stringify(this.questions, null, 2));
+	console.log("Exam succesfully created".green)
+}
+
 // start the exam
 Exam.prototype.start = async function () {
 	const rl = readline.createInterface({
@@ -95,24 +100,24 @@ Exam.prototype.removeLast = function () {
 }
 
 // verify if object already in exam
-	Exam.prototype.isAlreadyInExam = function (question) {
-		const isInExam = this.questions.some((examQuestion) => examQuestion.header === question.header);
-		if (isInExam) {
-			console.log("Question already in exam".red);
-		}
-		return isInExam;
-	};
+Exam.prototype.isAlreadyInExam = function (question) {
+	const isInExam = this.questions.some((examQuestion) => examQuestion.header === question.header);
+	if (isInExam) {
+		console.log("Question already in exam".red);
+	}
+	return isInExam;
+};
 
 // Add a question in exam
-	Exam.prototype.addQuestion = function (question) {
+Exam.prototype.addQuestion = function (question) {
 
-		//if question not in exam add
-		if (!this.isAlreadyInExam(question)) {
-			this.questions.push(question);
-			console.log("Question added to exam".green);
-			this.save();
-		}
+	//if question not in exam add
+	if (!this.isAlreadyInExam(question)) {
+		this.questions.push(question);
+		console.log("Question added to exam".green);
+		this.save();
 	}
+}
 
 //show exam's question
 	Exam.prototype.read = function () {

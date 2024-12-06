@@ -44,10 +44,6 @@ describe("Program Syntactic testing of GiftParser", function(){
         let file = fs.readFileSync('SujetB_data/EM-U5-p38-Passive.gift', 'utf8');
         this.analyzer.parse(file);
         let parsed = this.analyzer.parsedElement;
-        console.log(parsed);
-        console.log(parsed[0].questions[2]);
-        console.log(parsed[0].questions[2].body);
-
         expect(parsed.length).toBe(1);
         expect(parsed[0].comments.length).toBe(0);
         expect(parsed[0].questions.length).toBe(8);

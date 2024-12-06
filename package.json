@@ -1,5 +1,26 @@
 {
+  "name": "gift-parser-cli",
+  "version": "1.0.0",
+  "description": "Offer an interface for a recursive descent parser implemented in Javascript for reading and processing the moodle question Format (GIFT). This format allows to describe any question and its answer. The files are in text format and should respect the following grammar.",
+  "main": "giftCli.js",
+  "scripts": {
+    "test": "jasmine"
+  },
+  "keywords": [],
+  "author": "QEV",
   "dependencies": {
+    "@caporal/core": "^3.0.2",
+    "colors": "^1.4.0",
+    "vega": "^5.17.0",
+    "canvas": "^3.0.0-rc2",
+    "vega-lite": "^4.17.0"
+  },
+  "devDependencies": {
+    "eslint": "^9.16.0",
     "jasmine": "^5.5.0"
+  },
+  "overrides": {
+    "ajv": "^8.17.1",
+    "whatwg-url": "^14.0.0"
   }
 }

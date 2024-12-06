@@ -44,7 +44,16 @@ GiftParser.prototype.parse = function(data) {
 
 GiftParser.prototype.errMsg = function(msg, input) {
     this.errorCount++;
-    console.log("Parsing Error! on " + input + " -- msg : " + msg);
+
+    // If the error count is less than or equal to 10, print the specific error message
+    if (this.errorCount <= 10) {
+        console.log(`Parsing Error! on "${input}" -- msg: ${msg}`);
+    }
+
+    // If the error count reaches 11, indicate that the error limit has been exceeded
+    if (this.errorCount === 11) {
+        console.log("Too many errors encountered. Suppressing further error messages.");
+    }
 };
 
 // Lire et retourner un symbole de l'entrée

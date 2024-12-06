@@ -37,8 +37,6 @@ Exam.prototype.start = async function () {
 		output: process.stdout
 	});
 	console.log("Exam started".green)
-	console.log(this.questions)
-	console.log(this.questions[0].body)
 	// Fonction pour poser une question et attendre la réponse
 	const askQuestion = (question, index) => {
 		console.log(`\nQuestion ${index + 1}: ${question.header}`);

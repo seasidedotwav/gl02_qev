@@ -1,17 +1,17 @@
-### gl02_qev
+# gl02_qev
 
 
 
-### Installation
+## Installation
 
 $ npm install
 
-### Utilisation 
+## Utilisation 
 
 $ node giftCli.js <command>
 
 
-### Parser ###
+## Parser ###
 
 <command> : check <fileToParse> [-hts]
 

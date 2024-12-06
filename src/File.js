@@ -1,17 +1,17 @@
 let File = function () {
-	this.questions = [];
     this.comments = [];
     this.questions = [];
     this.instructions = [];
 }
 let Question = function () {
-    this.header = [];
+    this.header = "";
     this.body = [];
     this.format = "";
     this.type = "";
 
 }
 let Answers = function () {
+    this.type = "Answers";
     this.list = [];
     this.text = "";
 }

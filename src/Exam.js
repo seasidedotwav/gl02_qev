@@ -1,5 +1,7 @@
 const fs = require('fs');
 const colors = require('colors');
+const {Answers} = require("./File");
+const readline = require('readline');
 const path = require('path');
 
 
@@ -23,6 +25,60 @@ Exam.prototype.load = function () {
     }
 };
 
+// start the exam
+Exam.prototype.start = async function () {
+	const rl = readline.createInterface({
+		input: process.stdin,
+		output: process.stdout
+	});
+
+	// Fonction pour poser une question et attendre la réponse
+	const askQuestion = (question, index) => {
+		console.log(`\nQuestion ${index + 1}: ${question.header}`);
+
+		// Affiche le contenu de la question
+		question.body.forEach((item) => {
+			if (typeof item === 'string') {
+				console.log(item); // Affiche le texte principal
+			} else if (item.type === 'Answers') {
+				// Affiche les options de réponse
+				const answers = item.list;
+				answers.forEach((answer, i) => {
+					console.log(`${i + 1}. ${answer.text}`);
+				});
+			}
+		});
+
+		// Promesse pour attendre la réponse utilisateur
+		return new Promise((resolve) => {
+			rl.question('Enter your answer: ', (input) => {
+				const answers = question.body.find((item) => item.type === 'Answers').list;
+				const selectedIndex = parseInt(input) - 1;
+
+				if (selectedIndex >= 0 && selectedIndex < answers.length) {
+					const selectedAnswer = answers[selectedIndex];
+					if (selectedAnswer.correct) {
+						console.log('✅ Correct answer!');
+					} else {
+						console.log('❌ Wrong answer.');
+					}
+				} else {
+					console.log('Invalid choice. Please enter a valid number.');
+				}
+
+				resolve(); // Passe à la prochaine question
+			});
+		});
+	};
+
+	// Pose les questions une par une
+	for (let i = 0; i < this.questions.length; i++) {
+		await askQuestion(this.questions[i], i); // Attend la réponse avant de continuer
+	}
+
+	console.log('\nExam finished. Thank you for participating!');
+	rl.close();
+};
 
 // Clear the exam questions
 Exam.prototype.clear = function () {

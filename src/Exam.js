@@ -25,6 +25,11 @@ Exam.prototype.load = function () {
     }
 };
 
+Exam.prototype.create = function () {
+	fs.writeFileSync(FILE_PATH, JSON.stringify(this.questions, null, 2));
+	console.log("Exam succesfully created".green)
+}
+
 // start the exam
 Exam.prototype.start = async function () {
 	let points = 0; // Initialiser les points à 0
@@ -123,6 +128,8 @@ Exam.prototype.start = async function () {
 						});
 					}
 				}
+
+				resolve(); // Passe à la prochaine question
 			});
 		});
 	};
@@ -153,24 +160,24 @@ Exam.prototype.removeLast = function () {
 }
 
 // verify if object already in exam
-	Exam.prototype.isAlreadyInExam = function (question) {
-		const isInExam = this.questions.some((examQuestion) => examQuestion.header === question.header);
-		if (isInExam) {
-			console.log("Question already in exam".red);
-		}
-		return isInExam;
-	};
+Exam.prototype.isAlreadyInExam = function (question) {
+	const isInExam = this.questions.some((examQuestion) => examQuestion.header === question.header);
+	if (isInExam) {
+		console.log("Question already in exam".red);
+	}
+	return isInExam;
+};
 
 // Add a question in exam
-	Exam.prototype.addQuestion = function (question) {
+Exam.prototype.addQuestion = function (question) {
 
-		//if question not in exam add
-		if (!this.isAlreadyInExam(question)) {
-			this.questions.push(question);
-			console.log("Question added to exam".green);
-			this.save();
-		}
+	//if question not in exam add
+	if (!this.isAlreadyInExam(question)) {
+		this.questions.push(question);
+		console.log("Question added to exam".green);
+		this.save();
 	}
+}
 
 //show exam's question
 	Exam.prototype.read = function () {
@@ -212,19 +219,24 @@ Exam.prototype.removeLast = function () {
 			//TODO add rest of questions type
 			switch (type) {
 				case "1:MC:":
+				case "~":
 					QuestionsTypes.set("Choix Multiple", QuestionsTypes.get("Choix Multiple") + 1);
 					break;
-				case "1:SA:":
+				case "Vraie/Faux":
+					QuestionsTypes.set("Vraie/Faux", QuestionsTypes.get("Vraie/Faux") + 1);
+					break;
+				case "XX":
 					QuestionsTypes.set("Correspondance", QuestionsTypes.get("Correspondance") + 1);
 					break;
-				case "1:XX:":
-					QuestionsTypes.set(type, QuestionsTypes.get("Choix Multiple") + 1);
+				case "=":
+				case "1:SA:":
+					QuestionsTypes.set("Mot Manquant", QuestionsTypes.get("Mot Manquant") + 1);
 					break;
-				case "1:XX:":
-					QuestionsTypes.set(type, QuestionsTypes.get("Choix Multiple") + 1);
+				case "XX":
+					QuestionsTypes.set("Numérique", QuestionsTypes.get("Numérique") + 1);
 					break;
-				case "1:XX:":
-					QuestionsTypes.set(type, QuestionsTypes.get("Choix Multiple") + 1);
+				case "Question Ouverte":
+					QuestionsTypes.set("Question Ouverte", QuestionsTypes.get("Question Ouverte") + 1);
 					break;
 
 				default:

@@ -73,8 +73,8 @@ cli
 	})
 
 
-    // select a question from it question header/ID   EF01
-	.command('select', 'select a question with from it question header')
+    // select a question from it question header/ID  and add in exam EF01
+	.command('append', 'Select and Add a question in the exam from its header text')
 	.argument('<file>', 'The Gift file to search')
 	.argument('<headerText>', 'The text to look for in question\'s header')
 	.action(({args, options, logger}) => {
@@ -121,24 +121,91 @@ cli
 		});
 	})
 
-	// clear exam  EF02
-	.command('clearExam', 'Clear all question in the exam')
+	// remove last question exam  EF02
+	.command('create', 'Create a empty exam')
 	.action(({args, options, logger}) => {
-		exam.clear()
+		exam.create()
+	})
+
+	// remove last question exam  EF02
+	.command('remove', 'Remove the last question of the exam')
+	.action(({args, options, logger}) => {
+		exam.removeLast()
+	})
+
+	// show every question in the exam  EF02
+	.command('read', 'Display all question of the exam')
+	.action(({args, options, logger}) => {
+		exam.read()
+	})
+
+	// return lenght of exam  EF02
+	.command('length', 'Display all question of the exam')
+	.action(({args, options, logger}) => {
+		logger.info(("There is " +exam.questions.length +" questions in the exam.").green)
+	})
+
+	// verify exam integrity  EF03 
+	.command('compliant', 'Verify exam integrity')
+	.action(({args, options, logger}) => {
+		exam.isValid()
+	})
+
+	// ln check if the question is already in the exam  EF02
+	.command('ln', 'Free text search on questions')
+	.argument('<file>', 'The Vpf file to search')
+	.argument('<headerText>', 'The text to look for in the question body text or header')
+	.action(({args, options, logger}) => {
+		fs.readFile(args.file, 'utf8', function (err,data) {
+		if (err) {
+			return logger.warn(err);
+		}
+  
+		parser = new GiftParser();
+		parser.parse(data);
+		
+		if(parser.errorCount === 0){
+			var textToSearch = new RegExp(args.headerText);
+
+			var filteredElements = []
+
+			for (let i = 0; i < parser.parsedElement.length; i++) {		//iterate over parsedElement , on file
+				for (let k = 0; k < parser.parsedElement[i].questions.length; k++) {	//iterate over questions of the file
+					var question = parser.parsedElement[i].questions[k]
+
+					if (question.header.match(textToSearch, 'i')) {
+						filteredElements.push(question)
+					}
+				}
+			}
+			//check if lenght of filtered element ==1 to confirm selection
+			switch (filteredElements.length) {
+				case 0:
+					logger.info("No question found, Please enter a more accurate Question header identifier !".red);
+					break;
+				case 1:
+					if (!exam.isAlreadyInExam(filteredElements[0])) {
+						logger.info("Question not in exam");
+					}
+					break;
+				default:
+					logger.info("%s", JSON.stringify(filteredElements, null, 2));
+					logger.info("Too many question selected, Please enter a more accurate Question header identifier !".red);
+					break;
+			}
+
+		}else{
+			logger.info("The .gift file contains error".red);
+		}
+		});
 	})
 
     // export exam in GIFT format   EF02
-	.command('exportExam', 'select a question with from it question header')
+	.command('export', 'select a question with from it question header')
 	.action(({args, options, logger}) => {
 		if (exam.isValid()) {
 			exam.export()
 		}
-	})
-
-	// verify exam integrity  EF03 
-	.command('verifyExam', 'Verify exam integrity')
-	.action(({args, options, logger}) => {
-		exam.isValid()
 	})
 
     // generate prof VCARD file    EF04
@@ -197,28 +264,16 @@ END:VCARD`;
 	})
 
     //start  Start an exam   EF05
-	.command('start', 'Start an exam')
-    .argument('<file>', 'Exam file to start')
+	.command('startSimulation', 'Start an exam')
 	.action(({args, options, logger}) => {
-		fs.readFile(args.file, 'utf8', function (err,data) {
-		if (err) {
-			return logger.warn(err);
-		}
-  
-		parser = new GiftParser();
-		parser.parse(data);
-		
-		if(parser.errorCount === 0){
-			
-            //TODO start command
+
+
+	
+            //TODO start command 
+			//Exam.start()
             //start the exam , give point for good answer etc..
 			
 
-		}else{
-			logger.info("The .gift file contains error".red);
-		}
-		
-		});
 	})
 
     //stats  Show a graph about questions types in exam   EF06
@@ -257,7 +312,7 @@ END:VCARD`;
 			myCanvas.then(function(res){
 				fs.writeFileSync("./export/ExamStats.png", res.toBuffer());
 				view.finalize();
-				logger.info("Exam stats graph succesfully exported in Export Folder");
+				logger.info("Exam stats graph succesfully exported in Export Folder".green);
 			})	
 		} else {
 
@@ -300,7 +355,6 @@ END:VCARD`;
 			//create graph stats 
 			var comparedGraph =  
 				{
-					"$schema": "https://vega.github.io/schema/vega-lite/v5.json",
 					"data": {
 					"values": combinedData
 					},

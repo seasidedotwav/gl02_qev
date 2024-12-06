@@ -23,28 +23,39 @@ Exam.prototype.load = function () {
     }
 };
 
-
-// Clear the exam questions
-Exam.prototype.clear = function () {
-    this.questions = []
-	console.log("Exam has been cleared".green)
-	this.save()
+// create exam
+Exam.prototype.create = function () {
+	this.questions = []
+	console.log("New exam succesfully created".green)
+    fs.writeFileSync(FILE_PATH, JSON.stringify(this.questions, null, 2));
 };
 
-// Add a question in exam , verify if not already in exam
-Exam.prototype.addQuestion = function(question){
-	var isDuplicated = false;
 
-	//check if question already in exam
-	this.questions.forEach((examQuestion) => {
-		if (examQuestion.header == question.header) {
-			console.log("Question already in exam".red);
-			isDuplicated = true;
-		} 
-	});	
-	
+// remove last  question
+Exam.prototype.removeLast = function () {
+	if (this.questions.length =0) {
+		console.log("This exam is already empty".red)
+	} else {
+		this.questions.pop()
+		console.log("Last question has been removed".green)
+		this.save()
+	}
+};
+
+// verify if object already in exam
+Exam.prototype.isAlreadyInExam = function (question) {
+    const isInExam = this.questions.some((examQuestion) => examQuestion.header === question.header);
+    if (isInExam) {
+        console.log("Question already in exam".red);
+    }
+    return isInExam;
+};
+
+// Add a question in exam
+Exam.prototype.addQuestion = function(question){
+
 	//if question not in exam add
-	if (!isDuplicated) {
+	if (!this.isAlreadyInExam(question)) {
 		this.questions.push(question);
 		console.log("Question added to exam".green);
 		this.save();
@@ -52,11 +63,17 @@ Exam.prototype.addQuestion = function(question){
 }
 
 //show exam's question
-Exam.prototype.show = function(){
+Exam.prototype.read = function(){
 	console.log("---------------------- Questions in the current Exam ------------------------".blue)
 	console.log("%s", JSON.stringify(this.questions, null, 2));
 	console.log("------------------------ End questions in the exam --------------------------".blue)
+
+	this.questions.forEach((question)=> {
+		console.log( this.convertObjectToString(question))
+	})
 };
+
+
 
 //check if exam is valid format
 Exam.prototype.isValid = function(){
@@ -124,44 +141,45 @@ Exam.prototype.getQuestionsTypes = function(){
 
 //show exam's question
 Exam.prototype.export = function () {
-	let giftContent = "";
+	let examExportContent = "";
+
 	this.questions.forEach(question => {
-		// Question header
-		giftContent += `::${question.header}::\n`;
-
-		// Question format (if applicable)
-		if (question.format) {
-			giftContent += `${question.format}\n`;
-		}
-
-		// Question body
-		question.body.forEach(bodyPart => {
-			if (typeof bodyPart === 'string') {
-				giftContent += `${bodyPart}\n`;
-			} else if (bodyPart.list) {
-				giftContent += "{\n";
-				bodyPart.list.forEach(answer => {
-					const prefix = answer.correct ? "=" : "~";
-					giftContent += `  ${prefix}${answer.text}`;
-					if (answer.feedback) {
-						giftContent += `#${answer.feedback}`;
-					}
-					giftContent += "\n";
-				});
-				giftContent += "}\n";
-			}
-		});
-
-		giftContent += "\n"; // Add spacing between questions
-
+		examExportContent += this.convertObjectToString(question)
 	});
+
 	const outputPath = path.join(process.cwd(), 'export/Exam.gift');
-	fs.writeFileSync(outputPath, giftContent, 'utf-8');
+	fs.writeFileSync(outputPath, examExportContent, 'utf-8');
 	console.log(`Exam successfully exported to ${outputPath}`.green);
 
 };
 
+Exam.prototype.convertObjectToString = function (question) {
+	// Question header
+	let line = `::${question.header}::`;
 
+	// Question format (if applicable)
+	if (question.format) {
+		giftContent += `${question.format}`;
+	}
+
+	// Question body
+	question.body.forEach(bodyPart => {
+		if (typeof bodyPart === 'string') {
+			line += `${bodyPart}`;
+		} else if (bodyPart.list) {
+			line += "{";
+			bodyPart.list.forEach(answer => {
+				const prefix = answer.correct ? "=" : "~";
+				line += `${prefix}${answer.text}`;
+				if (answer.feedback) {
+					line += `#${answer.feedback}`;
+				}
+			});
+			line += "}";
+		}
+	});
+	return line
+}
 
 
 module.exports = Exam;

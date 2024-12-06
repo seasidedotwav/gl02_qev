@@ -5,7 +5,7 @@ let File = function () {
     this.instructions = [];
 }
 let Question = function () {
-    this.header = [];
+    this.header = "";
     this.body = [];
     this.format = "";
     this.type = "";

@@ -90,6 +90,7 @@ Exam.prototype.removeLast = function () {
 		this.save()
 		return
 	}
+}
 
 // verify if object already in exam
 Exam.prototype.isAlreadyInExam = function (question) {

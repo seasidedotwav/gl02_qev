@@ -91,9 +91,8 @@ Optional parameters have to be before the mandatory file parameter.
 
     Create a .png graph in folder export, compare actual exam questions types propotion from official exam proportions.
 
-### Exemple usage ###
 
-
+### Exemple Creation Exam + Simulation ###
 
 node src/giftCli.js create
 node src/giftCli.js append SujetB_data\EM-U5-p34-Voc.gift 1.1

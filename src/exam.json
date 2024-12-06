@@ -1,0 +1,31 @@
+[
+  {
+    "header": "EM U5 p34 Gra2.8",
+    "body": [
+      "People say that ",
+      {
+        "list": [
+          {
+            "correct": false,
+            "text": "few"
+          },
+          {
+            "correct": false,
+            "text": "a few"
+          },
+          {
+            "correct": false,
+            "text": "little"
+          },
+          {
+            "correct": true,
+            "text": "a little"
+          }
+        ],
+        "type": ""
+      },
+      " knowledge goes a long way!"
+    ],
+    "format": ""
+  }
+]

@@ -156,7 +156,7 @@ cli
 
 	// ln check if the question is already in the exam  EF02
 	.command('ln', 'Free text search on questions')
-	.argument('<file>', 'The Vpf file to search')
+	.argument('<file>', 'The GIFT file to search')
 	.argument('<headerText>', 'The text to look for in the question body text or header')
 	.action(({args, options, logger}) => {
 		fs.readFile(args.file, 'utf8', function (err,data) {

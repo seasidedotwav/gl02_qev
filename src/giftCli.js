@@ -26,7 +26,7 @@ cli
             parser.parse(data);
 
             if (parser.errorCount === 0) {
-                logger.info("The .gift file is a valid vpf file".green);
+                logger.info("The .gift file is a valid gift file".green);
             } else {
                 logger.info("The .gift file contains error".red);
             }

@@ -87,7 +87,7 @@ Exam.prototype.getQuestionsTypes = function(){
 
 		var type = examQuestions.type
 		//console.log(type)
-			
+		//TODO add rest of questions type
 		switch (type) {
 			case "1:MC:":
 				QuestionsTypes.set("Choix Multiple", QuestionsTypes.get("Choix Multiple") + 1);
@@ -155,7 +155,7 @@ Exam.prototype.export = function () {
 		giftContent += "\n"; // Add spacing between questions
 
 	});
-	const outputPath = path.join(process.cwd(), 'exam.gift');
+	const outputPath = path.join(process.cwd(), 'export/Exam.gift');
 	fs.writeFileSync(outputPath, giftContent, 'utf-8');
 	console.log(`Exam successfully exported to ${outputPath}`.green);
 

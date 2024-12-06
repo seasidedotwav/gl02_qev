@@ -39,9 +39,9 @@ cli
 
 
     // search a question by the question text   EF01
-	.command('search', 'Free text search on questions body text')
+	.command('search', 'Free text search on questions')
 	.argument('<file>', 'The Vpf file to search')
-	.argument('<bodyText>', 'The text to look for in question\'s header')
+	.argument('<bodyText>', 'The text to look for in the question body text or header')
 	.action(({args, options, logger}) => {
 		fs.readFile(args.file, 'utf8', function (err,data) {
 		if (err) {
@@ -60,7 +60,7 @@ cli
 				for (let k = 0; k < parser.parsedElement[i].questions.length; k++) {	//iterate over questions of the file
 					var question = parser.parsedElement[i].questions[k]
 
-					if (question.header.match(textToSearch, 'i')) {
+					if (question.header.match(textToSearch, 'i') || question.body[0].match(textToSearch, 'i')) {
 						filteredElements.push(question)
 					}
 				}
@@ -88,7 +88,6 @@ cli
 		
 		if(parser.errorCount === 0){
 			var textToSearch = new RegExp(args.headerText);
-
 
 			var filteredElements = []
 
@@ -131,12 +130,9 @@ cli
     // export exam in GIFT format   EF02
 	.command('exportExam', 'select a question with from it question header')
 	.action(({args, options, logger}) => {
-
 		if (exam.isValid()) {
 			exam.export()
-
 		}
-  
 	})
 
 	// verify exam integrity  EF03 
@@ -146,10 +142,11 @@ cli
 	})
 
     // generate prof VCARD file    EF04
-	.command('createProfVCARD', 'Generate Prof VCARD file')
-	.argument('<name>', 'prof name')
-    .argument('<email>', 'prof email address')
-	.argument('<phone>', 'prof phone number')
+	.command('createProfVCARD', 'Generate a Professor VCARD file')
+	.argument('<firstname>', 'Professor firstname')
+	.argument('<lastname>', 'Professor lastname')
+    .argument('<email>', 'Professor email address')
+	.argument('<phone>', 'Professor phone number')
 	.action(({ args, options, logger }) => {
 		// Validate input fields
 		const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -164,8 +161,8 @@ cli
 		}
 
 		// Split full name into first and last names
-		const [firstName, ...lastNameParts] = args.name.split(' ');
-		const lastName = lastNameParts.join(' ') || 'Unknown';
+		const firstName = args.firstname;
+		const lastName = args.lastname;
 
 		// Encode special characters for VCard compliance (RFC 6868)
 		const encodeForVCard = (text) =>
@@ -175,25 +172,25 @@ cli
 				.replace(/,/g, '\\,');
 
 		// Generate VCard content
-		const vCardContent = `BEGIN:VCARD
-			VERSION:3.0
-			N:${encodeForVCard(lastName)};${encodeForVCard(firstName)};;;
-			FN:${encodeForVCard(args.name)}
-			EMAIL;TYPE=WORK:${encodeForVCard(args.email)}
-			TEL;TYPE=WORK,VOICE:${encodeForVCard(args.phone)}
-			END:VCARD`;
+		const vCardContent = 
+`BEGIN:VCARD
+VERSION:4.0
+N:${encodeForVCard(firstName)};${encodeForVCard(lastName)};;;
+FN:${encodeForVCard(lastName)} ${encodeForVCard(firstName)}
+TEL;TYPE=work:${encodeForVCard(args.phone)}
+EMAIL:${encodeForVCard(args.email)}
+END:VCARD`;
 
 		// Define file name for VCard
-		const fileName = `prof_${args.name.replace(/\s+/g, '_')}.vcf`;
+		const filePath = `./export/prof_${firstName}_${lastName}.vcf`;
 
 		// Write VCard file
 		const fs = require('fs');
-		fs.writeFile(fileName, vCardContent, (err) => {
+		fs.writeFile(filePath, vCardContent, (err) => {
 			if (err) {
 				logger.info(`Error writing VCard file: ${err.message}`.red);
 			} else {
-				logger.info(`VCard file created successfully: ${fileName}`.green);
-				logger.info(vCardContent.cyan);
+				logger.info(`VCard file created successfully: ${filePath}`.green);
 			}
 		});
 
@@ -228,38 +225,43 @@ cli
 	.command('stats', 'Show a graph about questions types in exam')
 	.action(({args, options, logger}) => {
 
-		QuestionsType = exam.getQuestionsTypes();
+		if (exam.isValid()) {
+			QuestionsType = exam.getQuestionsTypes();
 
-		//create graph stats //to modif
-		var statsChart = {  
-			"width": 230,
-			"height": 280,
-			"data" : {
-					"values" : QuestionsType
-			},
-			"mark" : "bar",
-			"encoding" : {
-				"x" : {"field" : "type", "type" : "nominal",
-						"axis" : {"title" : "Questions Types"}
-					},
-				"y" : {"field" : "count", "type" : "quantitative",
-						"axis" : {"title" : "Question %"}
-					},
+			//create graph stats //to modif
+			var statsChart = {  
+				"width": 230,
+				"height": 280,
+				"data" : {
+						"values" : QuestionsType
+				},
+				"mark" : "bar",
+				"encoding" : {
+					"x" : {"field" : "type", "type" : "nominal",
+							"axis" : {"title" : "Questions Types"}
+						},
+					"y" : {"field" : "count", "type" : "quantitative",
+							"axis" : {"title" : "Question %"}
+						},
+				}
 			}
+		
+
+			// Compile the Vega-Lite chart to a Vega specification
+			const vegaSpec = vegaLite.compile(statsChart).spec;
+
+			// Parse the Vega specification
+			var runtime = vega.parse(vegaSpec);
+			var view = new vega.View(runtime).renderer('canvas').background("#FFF").run();
+			var myCanvas = view.toCanvas();
+			myCanvas.then(function(res){
+				fs.writeFileSync("./export/ExamStats.png", res.toBuffer());
+				view.finalize();
+				logger.info("Exam stats graph succesfully exported in Export Folder");
+			})	
+		} else {
+
 		}
-
-		// Compile the Vega-Lite chart to a Vega specification
-		const vegaSpec = vegaLite.compile(statsChart).spec;
-
-		// Parse the Vega specification
-		var runtime = vega.parse(vegaSpec);
-		var view = new vega.View(runtime).renderer('canvas').background("#FFF").run();
-		var myCanvas = view.toCanvas();
-		myCanvas.then(function(res){
-			fs.writeFileSync("./src/ExamStats.png", res.toBuffer());
-			view.finalize();
-			logger.info("Chart output : ./src/ExamStats.png");
-		})	
 
 	})
 
@@ -268,81 +270,81 @@ cli
 	.command('compare', 'show graph of comparaison to typical/national exam')
 	.action(({args, options, logger}) => {
 
-		//get exam types
-		QuestionsType = exam.getQuestionsTypes();
+		if (exam.isValid()) {
+			//get exam types
+			QuestionsType = exam.getQuestionsTypes();
 
-		//officla exam types proportion
-		officialQuestionType = [
-			{"type": "Choix Multiple", "officialCount": 30},
-			{"type": "Vraie/Faux", "officialCount": 25},
-			{"type": "Correspondance", "officialCount": 5},
-			{"type": "Mot Manquant", "officialCount": 10},
-			{"type": "Numérique", "officialCount": 10},
-			{"type": "Question Ouverte", "officialCount": 20},
-		  ]
+			//officla exam types proportion
+			officialQuestionType = [
+				{"type": "Choix Multiple", "officialCount": 30},
+				{"type": "Vraie/Faux", "officialCount": 25},
+				{"type": "Correspondance", "officialCount": 5},
+				{"type": "Mot Manquant", "officialCount": 10},
+				{"type": "Numérique", "officialCount": 10},
+				{"type": "Question Ouverte", "officialCount": 20},
+			]
 
-		// Merge the two datasets based on the question type
-		const combinedData = QuestionsType.map(qt => {
-			const official = officialQuestionType.find(o => o.type === qt.type);
-			return [
-				{ type: qt.type, category: "Exam", value: qt.count },
-				{ type: qt.type, category: "OfficialExam", value: official ? official.officialCount : 0 }
-			];
-		}).flat();
+			// Merge the two datasets based on the question type
+			const combinedData = QuestionsType.map(qt => {
+				const official = officialQuestionType.find(o => o.type === qt.type);
+				return [
+					{ type: qt.type, category: "Exam", value: qt.count },
+					{ type: qt.type, category: "OfficialExam", value: official ? official.officialCount : 0 }
+				];
+			}).flat();
 
-		console.log(combinedData)
+			//can't do combined graph , that work on online vega editor, but error :
+			//WARN xOffset-encoding is dropped as xOffset is not a valid encoding channel.
+			//when on local
 
-		//can't do combined graph , that work on online vega editor, but error :
-		//WARN xOffset-encoding is dropped as xOffset is not a valid encoding channel.
-		//when on local
-
-		//create graph stats //to modif
-		var comparedGraph =  
-			{
-				"$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-				"data": {
-    			"values": combinedData
-				},
-				"mark": "bar",
-				"encoding": {
-					"x": {
-					"field": "type",
-					"type": "nominal",
-					"title": "Question Type"
+			//create graph stats 
+			var comparedGraph =  
+				{
+					"$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+					"data": {
+					"values": combinedData
 					},
-					"y": {
-					"field": "value",
-					"type": "quantitative",
-					"title": "Quastion %"
-					},
-					"color": {
-					"field": "category",
-					"type": "nominal",
-					"title": "Category",
-					"legend": null 
-					},
-					"facet": {
-					"field": "category",
-					"type": "nominal",
-					"columns": 2,
-					"title": null  // This can be adjusted depending on your needs
+					"mark": "bar",
+					"encoding": {
+						"x": {
+						"field": "type",
+						"type": "nominal",
+						"title": "Question Type"
+						},
+						"y": {
+						"field": "value",
+						"type": "quantitative",
+						"title": "Quastion %"
+						},
+						"color": {
+						"field": "category",
+						"type": "nominal",
+						"title": "Category",
+						"legend": null 
+						},
+						"facet": {
+						"field": "category",
+						"type": "nominal",
+						"columns": 2,
+						"title": null  // This can be adjusted depending on your needs
+						}
 					}
-				}
-				};
+					};
 
 
-		// Compile the Vega-Lite chart to a Vega specification
-		const vegaSpec = vegaLite.compile(comparedGraph).spec;
+			// Compile the Vega-Lite chart to a Vega specification
+			const vegaSpec = vegaLite.compile(comparedGraph).spec;
 
-		// Parse the Vega specification
-		var runtime = vega.parse(vegaSpec);
-		var view = new vega.View(runtime).renderer('canvas').background("#FFF").run();
-		var myCanvas = view.toCanvas();
-		myCanvas.then(function(res){
-			fs.writeFileSync("./src/ComparedExam.png", res.toBuffer());
-			view.finalize();
-			logger.info("Chart output : ./src/ComparedExam.png");
-		})
+			// Parse the Vega specification
+			var runtime = vega.parse(vegaSpec);
+			var view = new vega.View(runtime).renderer('canvas').background("#FFF").run();
+			var myCanvas = view.toCanvas();
+			myCanvas.then(function(res){
+				fs.writeFileSync("./export/ComparedExam.png", res.toBuffer());
+				view.finalize();
+				logger.info("Compared graph succesfully exported in Export Folder".green);
+			})
+		}
 	})
 
 cli.run(process.argv.slice(2));

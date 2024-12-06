@@ -33,59 +33,115 @@ Exam.prototype.create = function () {
 
 // start the exam
 Exam.prototype.start = async function () {
+	let points = 0; // Initialiser les points à 0
+	let numQuestions = 0; // Initialiser le nombre de questions à 0
 	const rl = readline.createInterface({
 		input: process.stdin,
 		output: process.stdout
 	});
-	console.log("Exam started".green)
+	console.log("Exam started".green);
+
 	// Fonction pour poser une question et attendre la réponse
-	const askQuestion = (question, index) => {
-		console.log(`\nQuestion ${index + 1}: ${question.header}`);
-
-		// Affiche le contenu de la question
-		question.body.forEach((item) => {
-			if (typeof item === 'string') {
-				console.log(item); // Affiche le texte principal
-			} else if (item.type === 'Answers') {
-				// Affiche les options de réponse
-				const answers = item.list;
-				answers.forEach((answer, i) => {
-					console.log(`${i + 1}. ${answer.text}`);
-				});
-			}
-		});
-
-		// Promesse pour attendre la réponse utilisateur
+	const askQuestion = async (question, index) => {
 		return new Promise((resolve) => {
-			rl.question('Enter your answer: ', (input) => {
-				const answers = question.body.find((item) => item.type === 'Answers').list;
-				const selectedIndex = parseInt(input) - 1;
+			console.log(`\nQuestion ${index + 1}: ${question.header}`);
+			let isMatchedQuestion = false;
+			let matchedAnswers = [];
+			let matchedQuestions = [];
 
-				if (selectedIndex >= 0 && selectedIndex < answers.length) {
-					const selectedAnswer = answers[selectedIndex];
-					if (selectedAnswer.correct) {
-						console.log('✅ Correct answer!'.green);
+			// Affiche le contenu de la question
+			question.body.forEach((item) => {
+				if (typeof item === 'string') {
+					console.log(item); // Affiche le texte principal
+				} else if (item.type === 'Answers') {
+					const answers = item.list;
+
+					// Gère les réponses de type "Matching"
+					answers.forEach((answer, i) => {
+						if (answer.text.includes('->')) {
+							isMatchedQuestion = true;
+							// Découpe la réponse en deux parties : la question et la bonne réponse
+							matchedQuestions.push(answer.text.split('->')[0].trim());
+							matchedAnswers.push({
+								question: answer.text.split('->')[0].trim(),
+								correctAnswer: answer.text.split('->')[1].trim()
+							});
+						}
+						if (!isMatchedQuestion) {
+							console.log(`${i + 1}. ${answer.text}`);
+						}
+					});
+
+					// Si c'est une question de type "Matching", demande une correspondance
+					if (isMatchedQuestion) {
+						const handleMatchingAnswers = async () => {
+							// Affiche les réponses possibles
+							console.log("\nPossible answers to match:");
+							matchedAnswers.forEach((answer, i) => {
+								console.log(`${i + 1}. ${answer.correctAnswer}`);
+							});
+							// Demande à l'utilisateur de faire des correspondances pour chaque question
+							for (let i = 0; i < matchedAnswers.length; i++) {
+								const question = matchedQuestions[i];
+								numQuestions++;
+								await new Promise((resolve) => {
+									rl.question(`Match answer for "${question}": `, (input) => {
+										const selectedIndex = parseInt(input) - 1;
+										if (selectedIndex >= 0 && selectedIndex < matchedAnswers.length) {
+											const selectedAnswer = matchedAnswers[selectedIndex];
+											if (selectedAnswer.question === question) {
+												console.log('✅ Correct answer!'.green);
+												points++; // Incrémente les points pour une bonne réponse
+											} else {
+												console.log('❌ Wrong answer.'.red);
+											}
+										} else {
+											console.log('Invalid choice. Please enter a valid number.');
+										}
+										resolve(); // Passe à la prochaine question de matching
+									});
+								});
+							}
+							resolve(); // Passe à la question suivante une fois que tout est résolu
+						};
+						handleMatchingAnswers();
 					} else {
-						console.log('❌ Wrong answer.'.red);
+						// Si ce n'est pas une question de "Matching", on pose la question classique
+						numQuestions++;
+						rl.question('Enter your answer: ', (input) => {
+							const selectedIndex = parseInt(input) - 1;
+							if (selectedIndex >= 0 && selectedIndex < answers.length) {
+								const selectedAnswer = answers[selectedIndex];
+								if (selectedAnswer.correct) {
+									console.log('✅ Correct answer!'.green);
+									points++; // Incrémente les points pour une bonne réponse
+								} else {
+									console.log('❌ Wrong answer.'.red);
+								}
+								resolve(); // Passe à la question suivante
+							} else {
+								console.log('Invalid choice. Please enter a valid number.');
+								rl.question('Enter your answer: ', () => resolve()); // Redemander si l'entrée est invalide
+							}
+						});
 					}
-				} else {
-					console.log('Invalid choice. Please enter a valid number.');
 				}
-
-				resolve(); // Passe à la prochaine question
 			});
 		});
 	};
 
-	// Pose les questions une par une
+	// Pose les questions une par une et attend la réponse avant de passer à la suivante
 	for (let i = 0; i < this.questions.length; i++) {
 		await askQuestion(this.questions[i], i); // Attend la réponse avant de continuer
 	}
 
-	console.log('\nExam finished. Thank you for participating!');
+	// Affiche le score final de l'examen
+	console.log(`\nExam finished. Your total score is: ${points} out of ${numQuestions}`);
 	rl.close();
-
 };
+
+
+
 
 Exam.prototype.removeLast = function () {
 	if (this.questions.length === 0) {
